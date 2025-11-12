@@ -1,0 +1,49 @@
+outputs:
+  dir_outputs: outputs
+  dir_scripts: fixtures/scripts/
+  objects:
+    obj_A:
+      tag: t0
+      depends_on:
+        data:
+          somedata: fixtures/data/somedata/
+        other:
+          staticdata: fixtures/data/staticdata.rds
+    obj_B:
+      tag: t1
+      depends_on:
+        object: obj_A
+    obj_C:
+      tag: t2
+      depends_on:
+        object: obj_B
+    obj_D:
+      tag: t2
+      depends_on:
+        object:
+        - obj_A
+        - obj_C
+        other:
+          staticdata: fixtures/data/staticdata.rds
+    obj_E:
+      tag: t2
+    obj_F:
+      depends_on:
+        object:
+        - obj_E
+      tag: ~
+    obj_G:
+      copy_to_file_path: fixtures/data/copied/copied_object_G.csv
+      overwrite: TRUE
+      depends_on:
+        object:
+        - obj_E
+      tag: t3
+    obj_H:
+      copy_to_file_path: fixtures/data/copied/copied_object_H.csv
+      overwrite: TRUE
+      depends_on:
+        object:
+        - obj_F
+        - obj_G
+      tag: ~
