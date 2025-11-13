@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download coverage artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: coverage-artifact
           path: coverage
@@ -74,10 +74,10 @@ jobs:
           cat > badges/coverage.svg <<EOF
           <svg xmlns="http://www.w3.org/2000/svg" width="140" height="20" role="img" aria-label="coverage: $PCT%">
             <title>coverage: $PCT%</title>
-            <rect width="94" height="20" fill="#555"/>
+            <rect width="70" height="20" fill="#545455"/>
             <rect x="94" width="46" height="20" fill="$COLOR"/>
-            <text x="47" y="14" fill="#fff" font-size="11" text-anchor="middle">coverage</text>
-            <text x="117" y="14" fill="#fff" font-size="11" text-anchor="middle">$PCT%</text>
+            <text x="47" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle">coverage</text>
+            <text x="117" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle">$PCT%</text>
           </svg>
           EOF
         shell: bash
