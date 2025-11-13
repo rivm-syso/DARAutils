@@ -1,23 +1,15 @@
-# For help debugging build failures open an issue on the RStudio community with the 'github-actions' tag.
 on: [push, pull_request]
 
-name: R-CMD-check
+name: R-CMD-check-and-Coverage
 
 jobs:
   R-CMD-check:
     runs-on: ubuntu-latest
     container:
       image: daratools/darabase:latest
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-    outputs:
-      coverage: ${{ steps.extract-coverage.outputs.coverage }}
-
     steps:
-      # 1. Checkout repository
       - uses: actions/checkout@v4
 
-      # 2. Check R inside container
       - name: Check R inside container
         run: |
           R --version
@@ -25,63 +17,52 @@ jobs:
           Rscript -e 'install.packages("sendmailR")'
         shell: bash
 
-      # 3. Run R CMD check
-      - name: Check
+      - name: Run R CMD check
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning")
         shell: Rscript {0}
 
-      # 4. Generate coverage XML
       - name: Generate coverage XML
         run: |
           Rscript -e 'if (!requireNamespace("covr", quietly = TRUE)) install.packages("covr")'
           Rscript -e 'cov <- covr::package_coverage(); covr::to_cobertura(cov, file = "coverage.xml")'
         shell: bash
 
-      # 5. Extract coverage percentage
-      - id: extract-coverage
-        name: Extract coverage percentage
-        run: |
-          COVERAGE_XML=coverage.xml
-          covered=$(grep -oP 'lines-covered="\K[0-9]+' "$COVERAGE_XML" || echo 0)
-          valid=$(grep -oP 'lines-valid="\K[0-9]+' "$COVERAGE_XML" || echo 0)
-          pct=0
-          if [ "$valid" -ne 0 ]; then
-            pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$valid)*100}")
-          fi
-          echo "Coverage percent: $pct%"
-          echo "coverage=$pct" >> $GITHUB_OUTPUT
-        shell: bash
-
-      # 6. Generate coverage summary JSON (for artifacts or other workflows)
-      - name: Generate coverage summary JSON
-        run: |
-          pct=${{ steps.extract-coverage.outputs.coverage }}
-          echo "{\"percentage\": $pct}" > coverage-summary.json
-        shell: bash
-
-      # 7. Upload coverage artifacts
-      - name: Upload coverage artifacts
+      - name: Upload coverage XML artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-artifacts
-          path: |
-            coverage.xml
-            coverage-summary.json
+          name: coverage-artifact
+          path: coverage.xml
           retention-days: 1
 
-      # 8. Generate and push coverage badge
-      - name: Generate and push coverage badge
-        if: success()
-        shell: bash
+  coverage-badge:
+    runs-on: ubuntu-latest
+    needs: R-CMD-check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-artifact
+          path: coverage
+
+      - name: Extract coverage percentage
+        id: calc-coverage
         run: |
-          # Mark repo safe for git
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          covered=$(grep -oP 'lines-covered="\K[0-9]+' coverage/coverage.xml || echo 0)
+          valid=$(grep -oP 'lines-valid="\K[0-9]+' coverage/coverage.xml || echo 0)
+          if [ "$valid" -eq 0 ]; then
+            pct=0
+          else
+            pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$valid)*100}")
+          fi
+          echo "Coverage: $pct%"
+          echo "pct=$pct" >> $GITHUB_OUTPUT
+        shell: bash
 
-          # Extract coverage percentage using R
-          PCT=$(Rscript -e 'cat(jsonlite::read_json("coverage-summary.json")$percentage)')
-          echo "Coverage: $PCT%"
-
-          # Determine badge color
+      - name: Generate badge SVG
+        run: |
+          PCT=${{ steps.calc-coverage.outputs.pct }}
           COLOR="red"
           if (( $(echo "$PCT >= 80" | awk '{print ($1>=80)}') )); then
             COLOR="green"
@@ -89,9 +70,8 @@ jobs:
             COLOR="yellow"
           fi
 
-          # Generate badge
-          mkdir -p /tmp/badge
-          cat > /tmp/badge/coverage.svg <<EOF
+          mkdir -p badges
+          cat > badges/coverage.svg <<EOF
           <svg xmlns="http://www.w3.org/2000/svg" width="140" height="20" role="img" aria-label="coverage: $PCT%">
             <title>coverage: $PCT%</title>
             <rect width="94" height="20" fill="#555"/>
@@ -100,18 +80,17 @@ jobs:
             <text x="117" y="14" fill="#fff" font-size="11" text-anchor="middle">$PCT%</text>
           </svg>
           EOF
+        shell: bash
 
-          # Checkout or create gh-pages branch
-          git fetch origin gh-pages || true
-          git checkout gh-pages || git checkout --orphan gh-pages
-
-          # Move badge into gh-pages
-          mkdir -p badges
-          mv /tmp/badge/coverage.svg badges/coverage.svg
-
-          # Commit and push badge
-          git add badges/coverage.svg
+      - name: Push badge to gh-pages
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore: update coverage badge to ${PCT}%" || echo "No changes to commit"
+          git fetch origin gh-pages || true
+          git checkout gh-pages || git checkout --orphan gh-pages
+          mkdir -p badges
+          mv badges/coverage.svg badges/coverage.svg
+          git add badges/coverage.svg
+          git commit -m "chore: update coverage badge to $PCT%" || echo "No changes to commit"
           git push origin gh-pages
+        shell: bash
