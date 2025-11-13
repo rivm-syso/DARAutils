@@ -73,15 +73,25 @@ jobs:
 
       - name: Generate and push coverage badge
         if: success()
+        shell: bash
         run: |
-          sudo apt-get update && sudo apt-get install -y jq bc
-          PCT=$(jq '.percentage' coverage-summary.json)
+          # Mark repo safe for git (inside container)
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+          # Extract coverage from JSON using R
+          PCT=$(Rscript -e 'cat(jsonlite::read_json("coverage-summary.json")$percentage)')
           echo "Coverage: $PCT%"
 
-          if (( $(echo "$PCT >= 80" | bc -l) )); then COLOR="green"
-          elif (( $(echo "$PCT >= 60" | bc -l) )); then COLOR="yellow"
-          else COLOR="red"; fi
+          # Determine color thresholds
+          if (( $(echo "$PCT >= 80" | bc -l) )); then
+            COLOR="green"
+          elif (( $(echo "$PCT >= 60" | bc -l) )); then
+            COLOR="yellow"
+          else
+            COLOR="red"
+          fi
 
+          # Generate badge SVG
           mkdir -p badges
           cat > badges/coverage.svg <<EOF
           <svg xmlns="http://www.w3.org/2000/svg" width="140" height="20" role="img" aria-label="coverage: $PCT%">
@@ -93,6 +103,7 @@ jobs:
           </svg>
           EOF
 
+          # Commit and push to gh-pages
           git fetch origin gh-pages
           git checkout gh-pages || git checkout --orphan gh-pages
           mkdir -p badges
