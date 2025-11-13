@@ -86,11 +86,22 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Save badge to temp
+          mkdir -p /tmp/badge
+          mv badges/coverage.svg /tmp/badge/coverage.svg
+
+          # Checkout gh-pages branch safely
           git fetch origin gh-pages || true
           git checkout gh-pages || git checkout --orphan gh-pages
+
+          # Move badge into gh-pages
           mkdir -p badges
-          mv badges/coverage.svg badges/coverage.svg
+          mv /tmp/badge/coverage.svg badges/coverage.svg
+
+          # Commit & push
           git add badges/coverage.svg
           git commit -m "chore: update coverage badge to $PCT%" || echo "No changes to commit"
           git push origin gh-pages
         shell: bash
+
