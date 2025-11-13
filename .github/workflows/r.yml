@@ -37,8 +37,8 @@ jobs:
         name: Extract coverage percentage
         run: |
           COVERAGE_XML=coverage.xml
-          covered=$(grep -oP 'lines-covered="\K[0-9]+' "$COVERAGE_XML" || echo 0)
-          valid=$(grep -oP 'lines-valid="\K[0-9]+' "$COVERAGE_XML" || echo 0)
+          covered=$(awk -F 'lines-covered="' '{if (NF>1){split($2,a,"\""); print a[1]; exit}}' "$COVERAGE_XML" || echo 0)
+          valid=$(awk -F 'lines-valid="' '{if (NF>1){split($2,a,"\""); print a[1]; exit}}' "$COVERAGE_XML" || echo 0)
           if [ "$valid" -eq 0 ]; then
             pct=0
           else
@@ -51,14 +51,50 @@ jobs:
       - name: Generate coverage summary JSON
         run: |
           COVERAGE_XML=coverage.xml
-          covered=$(grep -oP 'lines-covered="\K[0-9]+' "$COVERAGE_XML" || echo 0)
-          valid=$(grep -oP 'lines-valid="\K[0-9]+' "$COVERAGE_XML" || echo 0)
+          covered=$(awk -F 'lines-covered="' '{if (NF>1){split($2,a,"\""); print a[1]; exit}}' "$COVERAGE_XML" || echo 0)
+          valid=$(awk -F 'lines-valid="' '{if (NF>1){split($2,a,"\""); print a[1]; exit}}' "$COVERAGE_XML" || echo 0)
           if [ "$valid" -eq 0 ]; then
             pct=0
           else
             pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$valid)*100}")
           fi
           echo "{\"percentage\": $pct}" > coverage-summary.json
+        shell: bash
+
+      - name: Publish badge to gh-pages
+        if: always()
+        run: |
+          # Prepare badge from template and push to gh-pages so Pages serves it reliably
+          PCT=$(jq -r '.percentage' coverage-summary.json)
+          if [ -z "$PCT" ]; then PCT=0; fi
+
+          if (( $(echo "$PCT >= 80" | bc -l) )); then COLOR="green"
+          elif (( $(echo "$PCT >= 60" | bc -l) )); then COLOR="yellow"
+          else COLOR="red"; fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Checkout gh-pages into a separate dir
+          git fetch origin gh-pages || true
+          git worktree add /tmp/gh-pages origin/gh-pages 2>/dev/null || git worktree add /tmp/gh-pages gh-pages || true
+
+          mkdir -p /tmp/gh-pages/badges
+
+          # Use template from this repo (main branch) to generate badge
+          if [ -f .github/templates/coverage-badge.svg ]; then
+            sed "s/{{PCT}}/$PCT/g; s/{{COLOR}}/$COLOR/g" .github/templates/coverage-badge.svg > /tmp/gh-pages/badges/coverage.svg
+          else
+            # fallback: simple svg
+            cat > /tmp/gh-pages/badges/coverage.svg <<EOF
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="20"><rect width="94" height="20" fill="#555"/><rect x="94" width="46" height="20" fill="$COLOR"/><text x="47" y="14" fill="#fff" text-anchor="middle">coverage</text><text x="117" y="14" fill="#fff" text-anchor="middle">$PCT%</text></svg>
+EOF
+          fi
+
+          cd /tmp/gh-pages
+          git add badges/coverage.svg
+          git commit -m "chore: update coverage badge to ${PCT}%" || echo "No changes"
+          git push origin HEAD:gh-pages || echo "Push failed"
         shell: bash
 
       - name: Upload coverage artifacts
