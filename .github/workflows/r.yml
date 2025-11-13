@@ -1,5 +1,4 @@
 # For help debugging build failures open an issue on the RStudio community with the 'github-actions' tag.
-# https://community.rstudio.com/new-topic?category=Package%20development&tags=github-actions
 on: [push, pull_request]
 
 name: R-CMD-check
@@ -20,7 +19,6 @@ jobs:
         run: |
           R --version
           Rscript -e 'cat("--- sessionInfo() ---\n"); print(sessionInfo())'
-          # 
           Rscript -e 'install.packages("sendmailR")'
         shell: bash
 
@@ -49,70 +47,50 @@ jobs:
           echo "coverage=$pct" >> $GITHUB_OUTPUT
         shell: bash
 
-      - name: Generate coverage summary JSON
+      # ------------------------------
+      # New step: Generate coverage badge
+      # ------------------------------
+      - name: Generate coverage badge
         run: |
-          COVERAGE_XML=coverage.xml
-          covered=$(grep -oP 'lines-covered="\K[0-9]+' "$COVERAGE_XML" || echo 0)
-          valid=$(grep -oP 'lines-valid="\K[0-9]+' "$COVERAGE_XML" || echo 0)
-          if [ "$valid" -eq 0 ]; then
-            pct=0
-          else
-            pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$valid)*100}")
-          fi
-          echo "{\"percentage\": $pct}" > coverage-summary.json
-        shell: bash
+          PCT=${{ steps.extract-coverage.outputs.coverage }}
+          INT_PCT=$(printf "%.0f" "$PCT")
 
-      - name: Upload coverage artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-artifacts
-          path: |
-            coverage.xml
-            coverage-summary.json
-          retention-days: 1
-
-      - name: Generate and push coverage badge
-        if: success()
-        shell: bash
-        run: |
-          # Mark repo safe for git (inside container)
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-          # Extract coverage using R
-          PCT=$(Rscript -e 'cat(jsonlite::read_json("coverage-summary.json")$percentage)')
-          echo "Coverage: $PCT%"
-
-          # Determine color (no bc needed)
-          COLOR="red"
-          if (( $(echo "$PCT >= 80" | awk '{print ($1>=80)}') )); then
+          if [ "$INT_PCT" -ge 80 ]; then
             COLOR="green"
-          elif (( $(echo "$PCT >= 60" | awk '{print ($1>=60)}') )); then
+          elif [ "$INT_PCT" -ge 60 ]; then
             COLOR="yellow"
+          else
+            COLOR="red"
           fi
 
-          # Create a temporary directory for badge
-          mkdir -p /tmp/badge
-          cat > /tmp/badge/coverage.svg <<EOF
+          mkdir -p badges
+          cat > badges/coverage.svg << EOF
           <svg xmlns="http://www.w3.org/2000/svg" width="140" height="20" role="img" aria-label="coverage: $PCT%">
             <title>coverage: $PCT%</title>
-            <rect width="94" height="20" fill="#555"/>
-            <rect x="94" width="46" height="20" fill="$COLOR"/>
-            <text x="47" y="14" fill="#fff" font-size="11" text-anchor="middle">coverage</text>
-            <text x="117" y="14" fill="#fff" font-size="11" text-anchor="middle">$PCT%</text>
+            <linearGradient id="s" x2="0" y2="100%">
+              <stop offset="0" stop-color="#bbb"/>
+              <stop offset="1" stop-color="#999"/>
+            </linearGradient>
+            <clipPath id="r"><rect width="140" height="20" rx="3" fill="#fff"/></clipPath>
+            <g clip-path="url(#r)">
+              <rect width="94" height="20" fill="#555"/>
+              <rect x="94" width="46" height="20" fill="$COLOR"/>
+              <rect width="140" height="20" fill="url(#s)" opacity="0.1"/>
+            </g>
+            <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+              <text aria-hidden="true" x="480" y="150" fill="#010101" fill-opacity="0.3" transform="scale(.1)" textLength="840">coverage</text>
+              <text x="480" y="140" transform="scale(.1)" fill="#fff" textLength="840">coverage</text>
+              <text aria-hidden="true" x="1160" y="150" fill="#010101" fill-opacity="0.3" transform="scale(.1)" textLength="360">$PCT%</text>
+              <text x="1160" y="140" transform="scale(.1)" fill="#fff" textLength="360">$PCT%</text>
+            </g>
           </svg>
           EOF
 
-          # Checkout gh-pages safely
-          git fetch origin gh-pages || true
-          git checkout gh-pages || git checkout --orphan gh-pages
-
-          # Move badge into gh-pages branch
-          mkdir -p badges
-          mv /tmp/badge/coverage.svg badges/coverage.svg
-
-          # Commit and push
-          git add badges/coverage.svg
+      - name: Commit and push badge
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore: update coverage badge to ${PCT}%" || echo "No changes to commit"
-          git push origin gh-pages
+          git checkout -B gh-pages
+          git add badges/coverage.svg
+          git commit -m "chore: update coverage badge to ${{ steps.extract-coverage.outputs.coverage }}%" || echo "No changes"
+          git push -u origin gh-pages --force
