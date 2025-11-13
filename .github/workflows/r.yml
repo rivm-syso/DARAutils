@@ -18,10 +18,11 @@ jobs:
         run: |
           R --version
           Rscript -e 'cat("--- sessionInfo() ---\n"); print(sessionInfo())'
+          Rscript -e 'install.packages("sendmailR")'
         shell: bash
 
       - name: Check
-        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
+        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning")
         shell: Rscript {0}
 
       - name: Generate coverage XML
