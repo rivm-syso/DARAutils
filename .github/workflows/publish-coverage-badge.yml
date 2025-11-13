@@ -8,65 +8,54 @@ on:
 
 permissions:
   contents: write
-  actions: read
 
 jobs:
   publish-badge:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
-    permissions:
-      contents: write
-      actions: read
     steps:
-      - name: Checkout gh-pages branch
+      - name: Checkout gh-pages
         uses: actions/checkout@v4
         with:
           ref: gh-pages
-          fetch-depth: 0
 
-      - name: Download coverage from workflow
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-artifacts
-          run-id: ${{ github.event.workflow_run.id }}
-          path: ./coverage-data
-
-      - name: Extract coverage and generate badge
+      - name: Get coverage from workflow logs
+        id: coverage
         run: |
-          # Read coverage percentage from coverage-summary.json if it exists
-          if [ -f "./coverage-data/coverage-summary.json" ]; then
-            pct=$(jq -r '.percentage' ./coverage-data/coverage-summary.json)
-          else
-            # Fallback: extract from coverage.xml
-            if [ -f "./coverage-data/coverage.xml" ]; then
-              covered=$(grep -oP 'lines-covered="\K[0-9]+' "./coverage-data/coverage.xml" || echo 0)
-              valid=$(grep -oP 'lines-valid="\K[0-9]+' "./coverage-data/coverage.xml" || echo 0)
-              if [ "$valid" -eq 0 ]; then
-                pct=0
-              else
-                pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$valid)*100}")
-              fi
-            else
-              pct=0
-            fi
+          # Fetch workflow run logs and extract coverage percentage
+          LOGS=$(curl -s \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/attempts/1/logs")
+          
+          # Extract coverage percent from "Coverage percent: XX.XX%" in logs
+          PCT=$(echo "$LOGS" | grep -oP 'Coverage percent: \K[0-9.]+' | head -1)
+          
+          if [ -z "$PCT" ]; then
+            echo "Warning: Could not extract coverage, defaulting to 0"
+            PCT=0
           fi
           
-          echo "Coverage: $pct%"
+          echo "percentage=$PCT" >> $GITHUB_OUTPUT
+          echo "Coverage extracted: $PCT%"
+
+      - name: Generate badge
+        run: |
+          PCT=${{ steps.coverage.outputs.percentage }}
           
-          # Determine badge color based on percentage
-          if (( $(echo "$pct >= 80" | bc -l) )); then
-            color="green"
-          elif (( $(echo "$pct >= 60" | bc -l) )); then
-            color="yellow"
+          # Determine color
+          if (( $(echo "$PCT >= 80" | bc -l) )); then
+            COLOR="green"
+          elif (( $(echo "$PCT >= 60" | bc -l) )); then
+            COLOR="yellow"
           else
-            color="red"
+            COLOR="red"
           fi
           
-          # Create SVG badge
-          mkdir -p ./badges
-          cat > ./badges/coverage.svg << EOF
-          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="140" height="20" role="img" aria-label="coverage: $pct%">
-            <title>coverage: $pct%</title>
+          # Create badge directory and SVG
+          mkdir -p badges
+          cat > badges/coverage.svg << 'EOF'
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="140" height="20" role="img" aria-label="coverage: $PCT%">
+            <title>coverage: $PCT%</title>
             <linearGradient id="s" x2="0" y2="100%">
               <stop offset="0" stop-color="#bbb"/>
               <stop offset="1" stop-color="#999"/>
@@ -76,25 +65,27 @@ jobs:
             </clipPath>
             <g clip-path="url(#r)">
               <rect width="94" height="20" fill="#555"/>
-              <rect x="94" width="46" height="20" fill="$color"/>
+              <rect x="94" width="46" height="20" fill="$COLOR"/>
               <rect width="140" height="20" fill="url(#s)" opacity="0.1"/>
             </g>
             <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="11">
               <text aria-hidden="true" x="480" y="150" fill="#010101" fill-opacity="0.3" transform="scale(.1)" textLength="840">coverage</text>
               <text x="480" y="140" transform="scale(.1)" fill="#fff" textLength="840">coverage</text>
-              <text aria-hidden="true" x="1160" y="150" fill="#010101" fill-opacity="0.3" transform="scale(.1)" textLength="360">$pct%</text>
-              <text x="1160" y="140" transform="scale(.1)" fill="#fff" textLength="360">$pct%</text>
+              <text aria-hidden="true" x="1160" y="150" fill="#010101" fill-opacity="0.3" transform="scale(.1)" textLength="360">$PCT%</text>
+              <text x="1160" y="140" transform="scale(.1)" fill="#fff" textLength="360">$PCT%</text>
             </g>
           </svg>
           EOF
+          
+          # Substitute values
+          sed -i "s/\$PCT/$PCT/g" badges/coverage.svg
+          sed -i "s/\$COLOR/$COLOR/g" badges/coverage.svg
 
-      - name: Commit and push badge
+      - name: Commit and push
         run: |
-          cd ./badges
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add coverage.svg
-          git commit -m "Update coverage badge: $pct%" || echo "No changes to commit"
+          git add badges/coverage.svg
+          git commit -m "chore: update coverage badge to ${{ steps.coverage.outputs.percentage }}%" || echo "No changes"
           git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
