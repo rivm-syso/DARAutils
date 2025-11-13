@@ -90,7 +90,7 @@ jobs:
 
           # Save badge to temp
           mkdir -p /tmp/badge
-          mv badges/coverage.svg /tmp/badge/coverage.svg
+          cp badges/coverage.svg /tmp/badge/coverage.svg
 
           # Checkout gh-pages branch safely
           git fetch origin gh-pages || true
@@ -98,7 +98,7 @@ jobs:
 
           # Move badge into gh-pages
           mkdir -p badges
-          mv /tmp/badge/coverage.svg badges/coverage.svg
+          cp /tmp/badge/coverage.svg badges/coverage.svg
 
           # Commit & push
           git add badges/coverage.svg
