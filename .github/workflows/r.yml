@@ -72,12 +72,13 @@ jobs:
 
           mkdir -p badges
           cat > badges/coverage.svg <<EOF
-          <svg xmlns="http://www.w3.org/2000/svg" width="140" height="20" role="img" aria-label="coverage: $PCT%">
+          <svg xmlns="http://www.w3.org/2000/svg" width="110" height="20" role="img" aria-label="coverage: $PCT%">
             <title>coverage: $PCT%</title>
-            <rect width="70" height="20" fill="#545455"/>
-            <rect x="94" width="46" height="20" fill="$COLOR"/>
-            <text x="47" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle">coverage</text>
-            <text x="117" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle">$PCT%</text>
+            <rect width="70" height="20" rx="5px" fill="#545455"/>
+            <rect x="60" width="50" height="20" rx="5px" fill="$COLOR"/>
+            <rect x="58" width="5" height="20" fill="#545455"/>
+            <text x="30" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle">Coverage</text>
+            <text x="85" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle">$PCT%</text>
           </svg>
           EOF
         shell: bash
