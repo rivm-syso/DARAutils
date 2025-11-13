@@ -11,6 +11,8 @@ jobs:
       image: daratools/darabase:latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      coverage: ${{ steps.extract-coverage.outputs.coverage }}
     steps:
       - uses: actions/checkout@v4
 
@@ -31,9 +33,39 @@ jobs:
           Rscript -e 'cov <- covr::package_coverage(); covr::to_cobertura(cov, file = "coverage.xml")'
         shell: bash
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+      - id: extract-coverage
+        name: Extract coverage percentage
+        run: |
+          COVERAGE_XML=coverage.xml
+          covered=$(grep -oP 'lines-covered="\K[0-9]+' "$COVERAGE_XML" || echo 0)
+          valid=$(grep -oP 'lines-valid="\K[0-9]+' "$COVERAGE_XML" || echo 0)
+          if [ "$valid" -eq 0 ]; then
+            pct=0
+          else
+            pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$valid)*100}")
+          fi
+          echo "Coverage percent: $pct%"
+          echo "coverage=$pct" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Generate coverage summary JSON
+        run: |
+          COVERAGE_XML=coverage.xml
+          covered=$(grep -oP 'lines-covered="\K[0-9]+' "$COVERAGE_XML" || echo 0)
+          valid=$(grep -oP 'lines-valid="\K[0-9]+' "$COVERAGE_XML" || echo 0)
+          if [ "$valid" -eq 0 ]; then
+            pct=0
+          else
+            pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$valid)*100}")
+          fi
+          echo "{\"percentage\": $pct}" > coverage-summary.json
+        shell: bash
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
         with:
-          files: coverage.xml
-          fail_ci_if_error: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          name: coverage-artifacts
+          path: |
+            coverage.xml
+            coverage-summary.json
+          retention-days: 1
