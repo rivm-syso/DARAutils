@@ -20,6 +20,7 @@ jobs:
         run: |
           R --version
           Rscript -e 'cat("--- sessionInfo() ---\n"); print(sessionInfo())'
+          # 
           Rscript -e 'install.packages("sendmailR")'
         shell: bash
 
@@ -69,3 +70,34 @@ jobs:
             coverage.xml
             coverage-summary.json
           retention-days: 1
+
+      - name: Generate and push coverage badge
+        if: success()
+        run: |
+          PCT=$(jq '.percentage' coverage-summary.json)
+          echo "Coverage: $PCT%"
+
+          if (( $(echo "$PCT >= 80" | bc -l) )); then COLOR="green"
+          elif (( $(echo "$PCT >= 60" | bc -l) )); then COLOR="yellow"
+          else COLOR="red"; fi
+
+          mkdir -p badges
+          cat > badges/coverage.svg <<EOF
+          <svg xmlns="http://www.w3.org/2000/svg" width="140" height="20" role="img" aria-label="coverage: $PCT%">
+            <title>coverage: $PCT%</title>
+            <rect width="94" height="20" fill="#555"/>
+            <rect x="94" width="46" height="20" fill="$COLOR"/>
+            <text x="47" y="14" fill="#fff" font-size="11" text-anchor="middle">coverage</text>
+            <text x="117" y="14" fill="#fff" font-size="11" text-anchor="middle">$PCT%</text>
+          </svg>
+          EOF
+
+          git fetch origin gh-pages
+          git checkout gh-pages || git checkout --orphan gh-pages
+          mkdir -p badges
+          cp badges/coverage.svg badges/
+          git add badges/coverage.svg
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: update coverage badge to ${PCT}%" || echo "No changes"
+          git push origin gh-pages
