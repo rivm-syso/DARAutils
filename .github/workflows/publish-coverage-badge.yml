@@ -8,11 +8,15 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   publish-badge:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: write
+      actions: read
     steps:
       - name: Checkout gh-pages branch
         uses: actions/checkout@v4
@@ -24,7 +28,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-artifacts
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
           path: ./coverage-data
 
