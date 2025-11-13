@@ -1,5 +1,4 @@
-# For help debugging build failures open an issue on the RStudio community with the 'github-actions' tag.
-# https://community.rstudio.com/new-topic?category=Package%20development&tags=github-actions
+# R CMD check workflow
 on: [push, pull_request]
 
 name: R-CMD-check
@@ -11,97 +10,106 @@ jobs:
       image: daratools/darabase:latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-    outputs:
-      coverage: ${{ steps.extract-coverage.outputs.coverage }}
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Check R inside container
+      - name: Print R session info
         run: |
           R --version
-          Rscript -e 'cat("--- sessionInfo() ---\n"); print(sessionInfo())'
-          Rscript -e 'install.packages("sendmailR")'
+          Rscript -e 'print(sessionInfo())'
         shell: bash
 
-      - name: Check
+      - name: Run R CMD check
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning")
         shell: Rscript {0}
 
-      - name: Generate coverage XML
+      - name: Generate coverage report
         run: |
           Rscript -e 'if (!requireNamespace("covr", quietly = TRUE)) install.packages("covr")'
           Rscript -e 'cov <- covr::package_coverage(); covr::to_cobertura(cov, file = "coverage.xml")'
         shell: bash
 
-      - id: extract-coverage
-        name: Extract coverage percentage
+      - name: Extract coverage and generate badge
+        id: coverage
         run: |
-          COVERAGE_XML=coverage.xml
-          covered=$(awk -F 'lines-covered="' '{if (NF>1){split($2,a,"\""); print a[1]; exit}}' "$COVERAGE_XML" || echo 0)
-          valid=$(awk -F 'lines-valid="' '{if (NF>1){split($2,a,"\""); print a[1]; exit}}' "$COVERAGE_XML" || echo 0)
-          if [ "$valid" -eq 0 ]; then
-            pct=0
+          # Extract coverage values from Cobertura XML using awk
+          COVERAGE_XML="coverage.xml"
+          
+          # Extract lines-covered and lines-valid attributes
+          COVERED=$(awk -F'"' '/<coverage/ {for(i=1;i<=NF;i++) if($i ~ /lines-covered/) print $(i+1)}' "$COVERAGE_XML" | head -1)
+          VALID=$(awk -F'"' '/<coverage/ {for(i=1;i<=NF;i++) if($i ~ /lines-valid/) print $(i+1)}' "$COVERAGE_XML" | head -1)
+          
+          # Fallback to 0 if not found
+          COVERED=${COVERED:-0}
+          VALID=${VALID:-0}
+          
+          # Calculate percentage
+          if [ "$VALID" -eq 0 ]; then
+            PCT=0
           else
-            pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$valid)*100}")
+            PCT=$(awk "BEGIN {printf \"%.1f\", ($COVERED/$VALID)*100}")
           fi
-          echo "Coverage percent: $pct%"
-          echo "coverage=$pct" >> $GITHUB_OUTPUT
+          
+          echo "Coverage percentage: $PCT%"
+          echo "percentage=$PCT" >> $GITHUB_OUTPUT
+          
+          # Determine color based on percentage
+          if (( $(echo "$PCT >= 80" | bc -l) )); then
+            COLOR="green"
+          elif (( $(echo "$PCT >= 60" | bc -l) )); then
+            COLOR="yellow"
+          else
+            COLOR="red"
+          fi
+          
+          echo "color=$COLOR" >> $GITHUB_OUTPUT
         shell: bash
 
-      - name: Generate coverage summary JSON
+      - name: Generate and publish coverage badge
+        if: github.ref == 'refs/heads/main'
         run: |
-          COVERAGE_XML=coverage.xml
-          covered=$(awk -F 'lines-covered="' '{if (NF>1){split($2,a,"\""); print a[1]; exit}}' "$COVERAGE_XML" || echo 0)
-          valid=$(awk -F 'lines-valid="' '{if (NF>1){split($2,a,"\""); print a[1]; exit}}' "$COVERAGE_XML" || echo 0)
-          if [ "$valid" -eq 0 ]; then
-            pct=0
-          else
-            pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$valid)*100}")
+          PCT="${{ steps.coverage.outputs.percentage }}"
+          COLOR="${{ steps.coverage.outputs.color }}"
+          
+          # Read template
+          TEMPLATE_FILE=".github/templates/coverage-badge.svg"
+          if [ ! -f "$TEMPLATE_FILE" ]; then
+            echo "Warning: template file not found at $TEMPLATE_FILE"
+            exit 0
           fi
-          echo "{\"percentage\": $pct}" > coverage-summary.json
-        shell: bash
-
-      - name: Publish badge to gh-pages
-        if: always()
-        run: |
-          # Prepare badge from template and push to gh-pages so Pages serves it reliably
-          PCT=$(jq -r '.percentage' coverage-summary.json)
-          if [ -z "$PCT" ]; then PCT=0; fi
-
-          if (( $(echo "$PCT >= 80" | bc -l) )); then COLOR="green"
-          elif (( $(echo "$PCT >= 60" | bc -l) )); then COLOR="yellow"
-          else COLOR="red"; fi
-
+          
+          # Generate badge by replacing placeholders
+          sed "s/{{PCT}}/$PCT/g; s/{{COLOR}}/$COLOR/g" "$TEMPLATE_FILE" > coverage-badge.svg
+          
+          # Setup git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Checkout gh-pages into a separate dir
-          git fetch origin gh-pages || true
-          git worktree add /tmp/gh-pages origin/gh-pages 2>/dev/null || git worktree add /tmp/gh-pages gh-pages || true
-
-          mkdir -p /tmp/gh-pages/badges
-
-          # Use template from this repo (main branch) to generate badge
-          if [ -f .github/templates/coverage-badge.svg ]; then
-            sed "s/{{PCT}}/$PCT/g; s/{{COLOR}}/$COLOR/g" .github/templates/coverage-badge.svg > /tmp/gh-pages/badges/coverage.svg
+          
+          # Fetch gh-pages branch and create badge directory if needed
+          git fetch origin gh-pages --depth=1 2>/dev/null || true
+          git checkout gh-pages 2>/dev/null || git checkout --orphan gh-pages
+          mkdir -p badges
+          
+          # Copy badge to badges directory
+          cp coverage-badge.svg badges/coverage.svg
+          
+          # Commit and push only if changed
+          if git diff --quiet badges/coverage.svg 2>/dev/null; then
+            echo "Badge unchanged, skipping commit"
           else
-            # fallback: simple svg
-            cat > /tmp/gh-pages/badges/coverage.svg <<EOF
-<svg xmlns="http://www.w3.org/2000/svg" width="140" height="20"><rect width="94" height="20" fill="#555"/><rect x="94" width="46" height="20" fill="$COLOR"/><text x="47" y="14" fill="#fff" text-anchor="middle">coverage</text><text x="117" y="14" fill="#fff" text-anchor="middle">$PCT%</text></svg>
-EOF
+            git add badges/coverage.svg
+            git commit -m "Update coverage badge: $PCT%" || true
+            git push origin gh-pages
           fi
-
-          cd /tmp/gh-pages
-          git add badges/coverage.svg
-          git commit -m "chore: update coverage badge to ${PCT}%" || echo "No changes"
-          git push origin HEAD:gh-pages || echo "Push failed"
         shell: bash
 
-      - name: Upload coverage artifacts
+      - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-artifacts
-          path: |
-            coverage.xml
-            coverage-summary.json
+          name: coverage-report
+          path: coverage.xml
           retention-days: 1
