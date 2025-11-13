@@ -79,8 +79,8 @@ jobs:
             <rect width="70" height="20" rx="5px" fill="#545455"/>
             <rect x="60" width="50" height="20" rx="5px" fill="$COLOR"/>
             <rect x="58" width="5" height="20" fill="#545455"/>
-            <text x="30" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle" font-family="monospace">Coverage</text>
-            <text x="85" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle" font-family="monospace">$PCT%</text>
+            <text x="30" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle" font-family="monospace" font-weight="bold">Coverage</text>
+            <text x="85" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle" font-family="monospace" font-weight="bold">$PCT%</text>
           </svg>
           EOF
         shell: bash
