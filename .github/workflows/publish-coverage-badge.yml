@@ -14,10 +14,19 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
     steps:
-      - name: Checkout gh-pages
+      - name: Checkout main (template source)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: repo-main
+          fetch-depth: 0
+
+      - name: Checkout gh-pages (site target)
         uses: actions/checkout@v4
         with:
           ref: gh-pages
+          path: repo-ghpages
+          fetch-depth: 0
 
       - name: Get coverage from workflow logs
         id: coverage
@@ -41,7 +50,7 @@ jobs:
       - name: Generate badge
         run: |
           PCT=${{ steps.coverage.outputs.percentage }}
-          
+
           # Determine color
           if (( $(echo "$PCT >= 80" | bc -l) )); then
             COLOR="green"
@@ -50,15 +59,24 @@ jobs:
           else
             COLOR="red"
           fi
-          
-          # Create badge directory and use template
-          mkdir -p badges
-          cat .github/templates/coverage-badge.svg | \
-            sed "s/{{PCT}}/$PCT/g" | \
-            sed "s/{{COLOR}}/$COLOR/g" > badges/coverage.svg
+
+          mkdir -p repo-ghpages/badges
+
+          # Use template from repo-main; fail if missing
+          if [ -f repo-main/.github/templates/coverage-badge.svg ]; then
+            sed "s/{{PCT}}/$PCT/g; s/{{COLOR}}/$COLOR/g" repo-main/.github/templates/coverage-badge.svg > repo-ghpages/badges/coverage.svg
+          else
+            echo "ERROR: template repo-main/.github/templates/coverage-badge.svg not found"
+            exit 1
+          fi
+
+          echo "Generated file size: $(stat -c%s repo-ghpages/badges/coverage.svg 2>/dev/null || echo 0)"
+          echo "Head of generated file:"
+          head -n 8 repo-ghpages/badges/coverage.svg || true
 
       - name: Commit and push
         run: |
+          cd repo-ghpages
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add badges/coverage.svg
