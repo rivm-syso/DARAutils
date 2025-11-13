@@ -1,3 +1,5 @@
+# TODO: This workflow should be thoroughly tested and validated before using in production
+
 on: [push, pull_request]
 
 name: R-CMD-check-and-Coverage
