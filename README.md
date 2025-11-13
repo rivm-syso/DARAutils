@@ -1,5 +1,5 @@
 # DARAutils
-![Coverage Status](https://rivm-syso.github.io/DARAutils/badges/coverage.svg)
+![Coverage Status](some weird link for github)
 
 ## Useful generic functions that can be used in DARApipelines
 
