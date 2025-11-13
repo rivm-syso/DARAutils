@@ -78,22 +78,21 @@ jobs:
           # Mark repo safe for git (inside container)
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-          # Extract coverage from JSON using R
+          # Extract coverage using R
           PCT=$(Rscript -e 'cat(jsonlite::read_json("coverage-summary.json")$percentage)')
           echo "Coverage: $PCT%"
 
-          # Determine color thresholds
-          if (( $(echo "$PCT >= 80" | bc -l) )); then
+          # Determine color (no bc needed)
+          COLOR="red"
+          if (( $(echo "$PCT >= 80" | awk '{print ($1>=80)}') )); then
             COLOR="green"
-          elif (( $(echo "$PCT >= 60" | bc -l) )); then
+          elif (( $(echo "$PCT >= 60" | awk '{print ($1>=60)}') )); then
             COLOR="yellow"
-          else
-            COLOR="red"
           fi
 
-          # Generate badge SVG
-          mkdir -p badges
-          cat > badges/coverage.svg <<EOF
+          # Create a temporary directory for badge
+          mkdir -p /tmp/badge
+          cat > /tmp/badge/coverage.svg <<EOF
           <svg xmlns="http://www.w3.org/2000/svg" width="140" height="20" role="img" aria-label="coverage: $PCT%">
             <title>coverage: $PCT%</title>
             <rect width="94" height="20" fill="#555"/>
@@ -103,13 +102,17 @@ jobs:
           </svg>
           EOF
 
-          # Commit and push to gh-pages
-          git fetch origin gh-pages
+          # Checkout gh-pages safely
+          git fetch origin gh-pages || true
           git checkout gh-pages || git checkout --orphan gh-pages
+
+          # Move badge into gh-pages branch
           mkdir -p badges
-          cp badges/coverage.svg badges/
+          mv /tmp/badge/coverage.svg badges/coverage.svg
+
+          # Commit and push
           git add badges/coverage.svg
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore: update coverage badge to ${PCT}%" || echo "No changes"
+          git commit -m "chore: update coverage badge to ${PCT}%" || echo "No changes to commit"
           git push origin gh-pages
