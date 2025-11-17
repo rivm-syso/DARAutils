@@ -91,31 +91,29 @@ jobs:
           name: badges
           path: badges/
           
-           # Push badges to gh-pages
+      # Push badges to gh-pages
       - name: Push badges to gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-
+          # Always go to repo root
           cd $GITHUB_WORKSPACE
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Fetch gh-pages branch or create it if it doesn't exist
           git fetch origin gh-pages || true
-          if git show-ref --quiet refs/heads/gh-pages; then
+          if git show-ref --verify --quiet refs/heads/gh-pages; then
             git checkout gh-pages
           else
             git checkout --orphan gh-pages
           fi
 
-          # Copy badges from current workflow directory
           mkdir -p badges
           cp badges/* badges/
 
-          # Commit and force push badges
           git add badges/coverage.svg badges/lintr.svg
-          git commit -m "chore: update coverage & LINTR badges" || echo "No changes to commit"
+          git commit -m "chore: update badges" || echo "No changes to commit"
           git push origin gh-pages --force
 
       # Update README
