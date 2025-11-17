@@ -1,30 +1,85 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
-# more testing
-on: [push, pull_request]
+name: lint-project
 
-name: lint-project.yaml
+on:
+  workflow_run:
+    workflows: ["R-CMD-check-and-Coverage"]
+    types: completed
 
-permissions: read-all
+permissions:
+  contents: write
 
 jobs:
   lint-project:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
     runs-on: ubuntu-latest
+    container:
+      image: daratools/darabase:latest
+
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    
     steps:
       - uses: actions/checkout@v4
 
-      - uses: r-lib/actions/setup-r@v2
-        with:
-          use-public-rspm: true
+      - name: Lint directory
+        shell: bash
+        run: |
+          # Run lintr and save status
+          Rscript -e '
+            library(lintr)
+            issues <- lint_dir()
+            status <- if (length(issues) == 0) "clean" else "issues"
+            writeLines(status, "lint-status.txt")
+          '
+          
+      - name: Read lint status
+        id: status
+        shell: bash
+        run: |
+          STATUS=$(cat lint-status.txt)
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
 
-      - name: Install lintr
-        run: install.packages("lintr")
-        shell: Rscript {0}
+      # Generate the svg badge
+      - name: Create lint badge
+        shell: bash
+        run: |
+          STATUS="${{ steps.status.outputs.status }}"
+          COLOR="#34915E" # green
+          LABEL="clean"
 
-      - name: Lint root directory
-        run: lintr::lint_dir()
-        shell: Rscript {0}
-        env:
-          LINTR_ERROR_ON_LINT: true
+          if [ "$STATUS" != "clean" ]; then
+            COLOR="#C55A47"   # red
+            LABEL="issues"
+          fi
+
+          mkdir -p badges
+
+          cat > badges/lint.svg <<EOF
+          <svg xmlns="http://www.w3.org/2000/svg" width="85" height="20">
+            <rect width="38" height="20" rx="5px" fill="#545455"/>
+            <rect x="37" width="48" height="20" rx="5px" fill="$COLOR"/>
+            <rect x="35" width="5" height="20" fill="#545455"/>
+            <text x="20" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle" font-family="monospace" font-weight="bold">lintR</text>
+            <text x="62" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle" font-family="monospace" font-weight="bold">%LABEL</text>
+          </svg>
+          EOF
+       
+      - name: Publish badge to gh-pages
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          mkdir -p /tmp/b
+          cp badges/lint.svg /tmp/b/lint.svg
+
+          git fetch origin gh-pages || true
+          git checkout gh-pages || git checkout --orphan gh-pages
+
+          mkdir -p badges
+          cp /tmp/b/lint.svg badges/lint.svg
+
+          git add badges/lint.svg
+          git commit -m "chore: update lint badge" || echo "No changes to commit"
+          git push origin gh-pages --force

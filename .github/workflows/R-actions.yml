@@ -1,14 +1,14 @@
-# TODO: This workflow should be thoroughly tested and validated before using in production
+name: R-CMD-check-and-Coverage
 
 on: [push, pull_request]
 
-name: R-CMD-check-and-Coverage
 
 jobs:
   R-CMD-check:
     runs-on: ubuntu-latest
     container:
       image: daratools/darabase:latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -16,7 +16,7 @@ jobs:
         run: |
           R --version
           Rscript -e 'cat("--- sessionInfo() ---\n"); print(sessionInfo())'
-          Rscript -e 'install.packages("sendmailR")'
+          Rscript -e 'install.packages("sendmailR")' #Should be removed later.
         shell: bash
 
       - name: Run R CMD check
@@ -51,8 +51,11 @@ jobs:
       - name: Extract coverage percentage
         id: calc-coverage
         run: |
-          covered=$(grep -oP 'lines-covered="\K[0-9]+' coverage/coverage.xml || echo 0)
-          valid=$(grep -oP 'lines-valid="\K[0-9]+' coverage/coverage.xml || echo 0)
+          covered=$(xmllint --xpath 'string(/coverage/@lines-covered)' coverage/coverage.xml 2>/dev/null || echo   0)
+          valid=$(xmllint --xpath 'string(/coverage/@lines-valid)' coverage/coverage.xml 2>/dev/null || echo 0)
+          #covered=$(grep -oP 'lines-covered="\K[0-9]+' coverage/coverage.xml || echo 0)
+          #valid=$(grep -oP 'lines-valid="\K[0-9]+' coverage/coverage.xml || echo 0)
+          
           if [ "$valid" -eq 0 ]; then
             pct=0
           else
@@ -85,7 +88,7 @@ jobs:
           EOF
         shell: bash
 
-      - name: Push badge to gh-pages
+      - name: Publish badge to gh-pages
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -115,13 +118,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Update README badge
+      - name: Update README badge reference
+        shell: bash
         run: |
-          README=README.md
-          BADGE_PATH="![Coverage Status](https://rivm-syso.github.io/DARAutils/badges/coverage.svg)"
+          BADGE_URL="https://rivm-syso.github.io/DARAutils/badges/coverage.svg"
+          sed -i "s|!\[Coverage status\](.*)|![Coverage status](${BADGE_URL})|" README.md
+          
+          #README=README.md
+          #BADGE_PATH="![Coverage Status](https://rivm-syso.github.io/DARAutils/badges/coverage.svg)"
           
           # Replace badge line starting with '![Coverage status]'
-          sed -i "s|!\[Coverage status\](.*)|![Coverage status]($BADGE_PATH)|" "$README"
+          # sed -i "s|!\[Coverage status\](.*)|![Coverage status]($BADGE_PATH)|" "$README"
 
       - name: Commit and push changes
         run: |
