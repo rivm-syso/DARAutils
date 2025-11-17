@@ -15,12 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: daratools/darabase:latest
-
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     
     steps:
       - uses: actions/checkout@v4
+
+      - name: Checkout repository
+        run: |
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git .
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Lint directory
         shell: bash
