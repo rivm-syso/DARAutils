@@ -94,29 +94,15 @@ jobs:
           path: badges/
           
       # Push badges to gh-pages
-      - name: Push badges to gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Always go to repo root
-          cd $GITHUB_WORKSPACE
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git fetch origin gh-pages || true
-          if git show-ref --verify --quiet refs/heads/gh-pages; then
-            git checkout gh-pages
-          else
-            git checkout --orphan gh-pages
-          fi
-
-          mkdir -p badges
-          cp badges/* badges/
-
-          git add badges/coverage.svg badges/lintr.svg
-          git commit -m "chore: update badges" || echo "No changes to commit"
-          git push origin gh-pages --force
+      # Push badges to gh-pages
+      - name: Deploy badges to gh-pages
+        uses: peaceiris/actions-gh-pages@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./badges       # local folder containing badges
+          destination_dir: badges     # folder in gh-pages branch
+          commit_message: "chore: update badges"
+          keep_files: true            # preserve existing files in gh-pages
 
       # Update README
       - name: Update README badges
