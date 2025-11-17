@@ -3,7 +3,7 @@ name: pkgdown
 
 on:
   workflow_run:
-    workflows: ["lint-project"]
+    workflows: ["R-CMD-check-and-Coverage"]
     types: completed
 
 permissions: read-all
