@@ -136,6 +136,3 @@ jobs:
           git add README.md
           git commit -m "chore: update coverage & LINTR badges in README" || echo "No changes to commit"
           git push origin main
-
-      - name: using usethis command 
-        run: Rscript -e 'usethis::use_github_action("pkgdown")'
