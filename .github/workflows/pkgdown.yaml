@@ -5,8 +5,7 @@ on:
     workflows: ["R-CMD-check-and-Coverage"]
     types: completed
 
-permissions:
-  contents: write
+permissions: read-all
 
 jobs:
   pkgdown:
@@ -15,6 +14,8 @@ jobs:
       group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -27,15 +28,16 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::pkgdown, local::.
+          needs: website
 
       - name: Build site
-        run: Rscript -e 'pkgdown::build_site_github_pages(dest_dir = "docs", new_process = FALSE, install = FALSE)'
+        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
+        shell: Rscript {0}
 
-      - name: Deploy to GitHub Pages
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin
-          # Switch to gh-pages branch or create if it doesn't exist
-          if git show-ref --quiet refs/heads/gh-pages; then
-            git checkout gh-pages
+      - name: Deploy to GitHub pages 🚀
+        if: github.event_name != 'pull_request'
+        uses: JamesIves/github-pages-deploy-action@v4.5.0
+        with:
+          clean: false
+          branch: gh-pages
+          folder: docs
