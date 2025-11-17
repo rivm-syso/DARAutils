@@ -84,8 +84,28 @@ jobs:
           EOF
         shell: bash
 
+              # Upload badges
+      - name: Upload badges
+        uses: actions/upload-artifact@v4
+        with:
+          name: badges
+          path: badges/
           
            # Push badges to gh-pages
+  push-badges:
+    runs-on: ubuntu-latest
+    needs: R-CMD-check
+    steps:
+      - uses: actions/checkout@v4
+
+      # Download badge artifacts
+      - name: Download badges
+        uses: actions/download-artifact@v4
+        with:
+          name: badges
+          path: badges
+
+      # Push badges to gh-pages
       - name: Push badges
         run: |
           git config user.name "github-actions[bot]"
@@ -95,40 +115,35 @@ jobs:
           git checkout gh-pages || git checkout --orphan gh-pages
 
           mkdir -p badges
-          cp badges/coverage.svg badges/coverage.svg
-          cp badges/lint.svg badges/lint.svg
+          cp badges/* badges/
 
-          git add badges/coverage.svg badges/lint.svg
-          git commit -m "chore: update coverage & lint badges" || echo "No changes to commit"
+          git add badges/coverage.svg badges/lintr.svg
+          git commit -m "chore: update coverage & LINTR badges" || echo "No changes to commit"
           git push origin gh-pages --force
-        shell: bash
 
+      # Update README
       - name: Update README badges
         run: |
           README=README.md
-
-          # Badge URLs
           COVERAGE_BADGE="![Coverage Status](https://<username>.github.io/<repo>/badges/coverage.svg)"
-          LINT_BADGE="![Lint Status](https://<username>.github.io/<repo>/badges/lint.svg)"
+          LINTR_BADGE="![LINTR Status](https://<username>.github.io/<repo>/badges/lintr.svg)"
 
-          # Replace or insert coverage badge line
           if grep -q "!\[Coverage Status\]" "$README"; then
             sed -i "s|!\[Coverage Status\](.*)|$COVERAGE_BADGE|" "$README"
           else
             echo "$COVERAGE_BADGE" >> "$README"
           fi
 
-          # Replace or insert lint badge line
-          if grep -q "!\[Lint Status\]" "$README"; then
-            sed -i "s|!\[Lint Status\](.*)|$LINT_BADGE|" "$README"
+          if grep -q "!\[LINTR Status\]" "$README"; then
+            sed -i "s|!\[LINTR Status\](.*)|$LINTR_BADGE|" "$README"
           else
-            echo "$LINT_BADGE" >> "$README"
+            echo "$LINTR_BADGE" >> "$README"
           fi
 
-      - name: Commit and push README updates
+      - name: Commit and push README
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "chore: update coverage & lint badges in README" || echo "No changes to commit"
+          git commit -m "chore: update coverage & LINTR badges in README" || echo "No changes to commit"
           git push origin HEAD:main
