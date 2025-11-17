@@ -1,5 +1,5 @@
 # DARAutils
-![Coverage Status](https://broken_link_coverage.org)
+![Coverage Status](https://<username>.github.io/<repo>/badges/coverage.svg)
 ![Lintr Status](https://broken_link_lintr.org)
 
 ## Useful generic functions that can be used in DARApipelines
@@ -80,3 +80,4 @@ This R package was created by the DARA team (RIVM/CiB/EPI in department DIS).
 
 The code can be re-used under license [EUPL v.1.2](https://eupl.eu/1.2/en/).
 
+![LINTR Status](https://<username>.github.io/<repo>/badges/lintr.svg)
