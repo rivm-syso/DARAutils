@@ -1,5 +1,6 @@
 # DARAutils
-![Coverage Status](some weird link for github)
+![Coverage Status](https://broken_link_coverage.org)
+![Lintr Status](https://broken_link_lintr.org)
 
 ## Useful generic functions that can be used in DARApipelines
 

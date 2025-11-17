@@ -23,51 +23,20 @@ jobs:
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning")
         shell: Rscript {0}
 
-      - name: Generate coverage XML
+      - name: Generate coverage XML & badge
         run: |
           Rscript -e 'if (!requireNamespace("covr", quietly = TRUE)) install.packages("covr")'
           Rscript -e 'cov <- covr::package_coverage(); covr::to_cobertura(cov, file = "coverage.xml")'
-        shell: bash
-
-      - name: Upload coverage XML artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-artifact
-          path: coverage.xml
-          retention-days: 1
-
-  coverage-badge:
-    runs-on: ubuntu-latest
-    needs: R-CMD-check
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download coverage artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-artifact
-          path: coverage
-
-      - name: Extract coverage percentage
-        id: calc-coverage
-        run: |
+        
           covered=$(xmllint --xpath 'string(/coverage/@lines-covered)' coverage/coverage.xml 2>/dev/null || echo   0)
           valid=$(xmllint --xpath 'string(/coverage/@lines-valid)' coverage/coverage.xml 2>/dev/null || echo 0)
-          #covered=$(grep -oP 'lines-covered="\K[0-9]+' coverage/coverage.xml || echo 0)
-          #valid=$(grep -oP 'lines-valid="\K[0-9]+' coverage/coverage.xml || echo 0)
-          
+         
           if [ "$valid" -eq 0 ]; then
             pct=0
           else
             pct=$(awk "BEGIN {printf \"%.2f\", ($covered/$valid)*100}")
           fi
-          echo "Coverage: $pct%"
-          echo "pct=$pct" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Generate badge SVG
-        run: |
-          PCT=${{ steps.calc-coverage.outputs.pct }}
+        
           COLOR="#C55A47"
           if (( $(echo "$PCT >= 80" | awk '{print ($1>=80)}') )); then
             COLOR="#34915E"
@@ -88,52 +57,78 @@ jobs:
           EOF
         shell: bash
 
-      - name: Publish badge to gh-pages
+        # Run lintr and generate lint badge
+      - name: Run lintr & generate badge
+        run: |
+          # Run lintr
+          Rscript -e 'if (!requireNamespace("lintr", quietly = TRUE)) install.packages("lintr")'
+          Rscript -e 'lintr::lint_dir()'
+          LINT_STATUS=$?
+
+          # Determine badge status
+          STATUS="passing"
+          if [ $LINT_STATUS -ne 0 ]; then
+            STATUS="failing"
+          fi
+
+          # Generate SVG badge
+          mkdir -p badges
+          cat > badges/lint.svg <<EOF
+          <svg xmlns="http://www.w3.org/2000/svg" width="85" height="20">
+            <rect width="38" height="20" rx="5px" fill="#545455"/>
+            <rect x="37" width="48" height="20" rx="5px" fill="$COLOR"/>
+            <rect x="35" width="5" height="20" fill="#545455"/>
+            <text x="20" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle" font-family="monospace" font-weight="bold">lintR</text>
+            <text x="62" y="14" fill="#E6E1E1" font-size="12" text-anchor="middle" font-family="monospace" font-weight="bold">%LABEL</text>
+          </svg>
+          EOF
+        shell: bash
+
+          
+           # Push badges to gh-pages
+      - name: Push badges
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Save badge to temp
-          mkdir -p /tmp/badge
-          cp badges/coverage.svg /tmp/badge/coverage.svg
-
-          # Checkout gh-pages branch safely
           git fetch origin gh-pages || true
           git checkout gh-pages || git checkout --orphan gh-pages
 
-          # Move badge into gh-pages
           mkdir -p badges
-          cp /tmp/badge/coverage.svg badges/coverage.svg
+          cp badges/coverage.svg badges/coverage.svg
+          cp badges/lint.svg badges/lint.svg
 
-          # Commit & push
-          git add badges/coverage.svg
-          git commit -m "chore: update coverage badge to $PCT%" || echo "No changes to commit"
+          git add badges/coverage.svg badges/lint.svg
+          git commit -m "chore: update coverage & lint badges" || echo "No changes to commit"
           git push origin gh-pages --force
         shell: bash
 
-
-  update-readme-badge:
-    runs-on: ubuntu-latest
-    needs: coverage-badge  # make this depend on your coverage job
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Update README badge reference
-        shell: bash
+      - name: Update README badges
         run: |
-          BADGE_URL="https://rivm-syso.github.io/DARAutils/badges/coverage.svg"
-          sed -i "s|!\[Coverage status\](.*)|![Coverage status](${BADGE_URL})|" README.md
-          
-          #README=README.md
-          #BADGE_PATH="![Coverage Status](https://rivm-syso.github.io/DARAutils/badges/coverage.svg)"
-          
-          # Replace badge line starting with '![Coverage status]'
-          # sed -i "s|!\[Coverage status\](.*)|![Coverage status]($BADGE_PATH)|" "$README"
+          README=README.md
 
-      - name: Commit and push changes
+          # Badge URLs
+          COVERAGE_BADGE="![Coverage Status](https://<username>.github.io/<repo>/badges/coverage.svg)"
+          LINT_BADGE="![Lint Status](https://<username>.github.io/<repo>/badges/lint.svg)"
+
+          # Replace or insert coverage badge line
+          if grep -q "!\[Coverage Status\]" "$README"; then
+            sed -i "s|!\[Coverage Status\](.*)|$COVERAGE_BADGE|" "$README"
+          else
+            echo "$COVERAGE_BADGE" >> "$README"
+          fi
+
+          # Replace or insert lint badge line
+          if grep -q "!\[Lint Status\]" "$README"; then
+            sed -i "s|!\[Lint Status\](.*)|$LINT_BADGE|" "$README"
+          else
+            echo "$LINT_BADGE" >> "$README"
+          fi
+
+      - name: Commit and push README updates
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "chore: update coverage badge in README" || echo "No changes to commit"
+          git commit -m "chore: update coverage & lint badges in README" || echo "No changes to commit"
           git push origin HEAD:main
