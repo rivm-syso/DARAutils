@@ -96,7 +96,7 @@ jobs:
       # Push badges to gh-pages
       # Push badges to gh-pages
       - name: Deploy badges to gh-pages
-        uses: peaceiris/actions-gh-pages@v6
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./badges       # local folder containing badges
