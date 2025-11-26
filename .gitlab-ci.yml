@@ -1,0 +1,97 @@
+# Note, this is a template from DARAtools.
+
+variables:
+  R_LIBS: "ci/lib"
+  LINTR_ERROR_ON_LINT: true
+
+# use tidyverse rocker image, includes R, tidyverse, devtools: https://github.com/rocker-org/rocker
+image: rocker/tidyverse
+
+# define cache (for package installs, reduces job time)
+cache:
+  key: cache-$CI_COMMIT_REF_SLUG
+  paths:
+    - $R_LIBS
+
+# define stages of runner
+stages:
+  # - source
+  - build
+  - test
+  - pages
+
+.install_deps_os:
+  before_script:
+    - echo $CI_COMMIT_REF_SLUG
+    - echo "Library path for packages:" $R_LIBS
+    - mkdir -p $R_LIBS
+      # install system packages because it runs on linux
+    - apt-get update
+    - >-
+        ACCEPT_EULA=Y apt-get install -y --no-install-recommends \
+          libudunits2-dev \
+          libgdal-dev \
+          libgeos-dev \
+          libproj-dev \
+          libglpk-dev
+
+.install_deps_r:
+  before_script:
+    - echo $CI_COMMIT_REF_SLUG
+    - echo "Library path for packages:" $R_LIBS
+    - mkdir -p $R_LIBS
+    - |
+      R -e '
+      devtools::install_deps(dependencies = TRUE, repos = "http://cran.r-project.org", upgrade = "never")
+      '
+
+build_package:
+  stage: build
+  before_script:
+    - !reference [".install_deps_r", "before_script"]
+  script:
+    - R -e 'devtools::check(error_on = "warning", cran = FALSE)'
+
+run_unittests:
+  stage: test
+  before_script:
+    - !reference [".install_deps_r", "before_script"]
+  script:
+    - R -e 'devtools::test(stop_on_failure = TRUE)'
+
+run_coverage:
+  stage: test
+  before_script:
+    - !reference [".install_deps_r", "before_script"]
+  script:
+    - R -e 'covr::package_coverage()'
+  # pattern to search for in log for coverage button
+  coverage: '/Coverage: \d+(?:\.\d+)?/'
+
+run_lint:
+  stage: test
+  script:
+    - |
+      R -e '
+      installed.packages(lib.loc = "/builds/dara/DARAutils/ci/lib")[, c("Package", "Version", "LibPath")]
+      install.packages("lintr")
+      lintr::lint_package()
+      '
+pages:
+  stage: pages
+  before_script:
+    - !reference [".install_deps_os", "before_script"]
+    - !reference [".install_deps_r", "before_script"]
+  script:
+     - |
+      R -e '
+      devtools::document()
+      pkgdown::build_site()
+      install.packages(c("covr", "DT"))
+      covr::gitlab(quiet = FALSE)
+      '
+  artifacts:
+    paths:
+    - public
+  only:
+     - main

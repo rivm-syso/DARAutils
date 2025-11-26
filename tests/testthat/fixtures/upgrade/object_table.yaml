@@ -1,0 +1,171 @@
+copy_objects:
+  skip_cache: no
+  tag: no_tag
+  type: other
+  output_formats: ~
+  output_arguments: ~
+  output_formats_custom: ~
+  hierarchy_level: -1.0
+  depends_on:
+  - obj_G
+  - obj_H
+obj_A:
+  skip_cache: no
+  tag: t0
+  type: object
+  output_formats: rds
+  output_arguments: ~
+  output_formats_custom: ~
+  hierarchy_level: -4.0
+  cache_file: cache/20240119_1201/obj_A.rds
+  output_dir: outputs
+  script_dir: fixtures/scripts/
+  generate_script: fixtures/scripts/obj_A.R
+  is_generated: no
+  depends_on:
+  - somedata
+  - staticdata
+obj_B:
+  skip_cache: no
+  tag: t1
+  type: object
+  output_formats: rds
+  output_arguments: ~
+  output_formats_custom: ~
+  hierarchy_level: -3.0
+  cache_file: cache/20240119_1201/obj_B.rds
+  output_dir: outputs
+  script_dir: fixtures/scripts/
+  generate_script: fixtures/scripts/obj_B.R
+  is_generated: no
+  depends_on: obj_A
+obj_C:
+  skip_cache: no
+  tag: t2
+  type: object
+  output_formats: rds
+  output_arguments: ~
+  output_formats_custom: ~
+  hierarchy_level: -2.0
+  cache_file: cache/20240119_1201/obj_C.rds
+  output_dir: outputs
+  script_dir: fixtures/scripts/
+  generate_script: fixtures/scripts/obj_C.R
+  is_generated: no
+  depends_on: obj_B
+obj_D:
+  skip_cache: no
+  tag: t2
+  type: object
+  output_formats: rds
+  output_arguments: ~
+  output_formats_custom: ~
+  hierarchy_level: -1.0
+  cache_file: cache/20240119_1201/obj_D.rds
+  output_dir: outputs
+  script_dir: fixtures/scripts/
+  generate_script: fixtures/scripts/obj_D.R
+  is_generated: no
+  depends_on:
+  - obj_A
+  - obj_C
+  - staticdata
+obj_E:
+  skip_cache: no
+  tag: t2
+  type: object
+  output_formats: rds
+  output_arguments: ~
+  output_formats_custom: ~
+  hierarchy_level: -4.0
+  cache_file: cache/20240119_1201/obj_E.rds
+  output_dir: outputs
+  script_dir: fixtures/scripts/
+  generate_script: fixtures/scripts/obj_E.R
+  is_generated: no
+obj_F:
+  skip_cache: no
+  tag: ~
+  type: object
+  output_formats: rds
+  output_arguments: ~
+  output_formats_custom: ~
+  hierarchy_level: -3.0
+  cache_file: cache/20240119_1201/obj_F.rds
+  output_dir: outputs
+  script_dir: fixtures/scripts/
+  generate_script: fixtures/scripts/obj_F.R
+  is_generated: no
+  depends_on: obj_E
+obj_G:
+  skip_cache: no
+  tag: t3
+  type: object
+  output_formats: rds
+  output_arguments: ~
+  output_formats_custom: ~
+  copy_to_file_path: fixtures/data/copied/copied_object_G.csv
+  overwrite: TRUE
+  hierarchy_level: -3.0
+  cache_file: cache/20240119_1201/obj_G.rds
+  output_dir: outputs
+  script_dir: fixtures/scripts/
+  generate_script: fixtures/scripts/obj_G.R
+  is_generated: no
+  depends_on: obj_E
+obj_H:
+  skip_cache: no
+  tag: ~
+  type: object
+  output_formats: rds
+  output_arguments: ~
+  output_formats_custom: ~
+  copy_to_file_path: fixtures/data/copied/copied_object_H.csv
+  overwrite: TRUE
+  hierarchy_level: -2.0
+  cache_file: cache/20240119_1201/obj_H.rds
+  output_dir: outputs
+  script_dir: fixtures/scripts/
+  generate_script: fixtures/scripts/obj_H.R
+  is_generated: no
+  depends_on:
+  - obj_F
+  - obj_G
+somedata:
+  skip_cache: no
+  tag: no_tag
+  type: data
+  output_formats: rds
+  output_arguments: ~
+  output_formats_custom: ~
+  dir_input: fixtures/data/somedata/
+  hierarchy_level: -5.0
+staticdata:
+  skip_cache: no
+  tag: no_tag
+  type: other
+  output_formats: rds
+  output_arguments: ~
+  output_formats_custom: ~
+  dir_input: fixtures/data/staticdata.rds
+  hierarchy_level: -5.0
+test_object:
+  skip_cache: no
+  tag: no_tag
+  type: object
+  output_formats: ~
+  output_arguments: 
+    pdf:
+      width: 8
+      height: 6
+  output_formats_custom: 
+    pdf: fun_pdf
+  hierarchy_level: -1.0
+  cache_file: cache/20240119_1201/test_object.rds
+  output_dir: outputs
+  script_dir: fixtures/scripts/
+  generate_script: fixtures/scripts/test_object.R
+  is_generated: no
+  depends_on:
+  - obj_F
+  - obj_G

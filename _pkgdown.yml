@@ -1,0 +1,34 @@
+url: ~
+template:
+  bootstrap: 5
+  light-switch: true
+  bslib:
+    danger: "#A6081A"
+#  You can choose from multiple themes for the design and layout of the site
+#  bootswatch: litera
+destination: public
+
+reference:
+- title: "Date functions"
+  desc: >
+    Helper functions used for correct date formatting & calculations.
+  contents:
+  - ISOweek
+  - xlabel_weekyear
+  - join_date_sequence
+- title: "Logger functions"
+  desc: >
+    Helper functions used for clean log messages.
+  contents:
+  - formatter_cli
+  - layout_generator_subject
+  - local_logger_sink
+- title: "Other functions"
+  desc: >
+    Functions that don't fit into a specific category.
+  contents:
+  - send_mail
+  - upgrade_config
+  - cut_and_label
+  - import_rds_to_object
+  - inheriting_merge
