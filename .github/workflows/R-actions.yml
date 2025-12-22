@@ -30,9 +30,7 @@ jobs:
 
       # 4. Build and deploy pkgdown site
       - name: Build and deploy pkgdown
-        uses: r-lib/actions/pkgdown@v2
-        with:
-          deploy_key: ${{ secrets.DEPLOY_KEY }}
+        run: Rscript -e "pkgdown::build_site_github_pages()"
 
   #     - name: Generate coverage XML & badge
   #       run: |
