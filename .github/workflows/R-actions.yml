@@ -24,6 +24,11 @@ jobs:
         run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning")
         shell: Rscript {0}
 
+      - name: Run covr
+        run: covr::package_coverage()
+        shell: Rscript {0}
+
+
   #     - name: Generate coverage XML & badge
   #       run: |
   #         Rscript -e 'if (!requireNamespace("covr", quietly = TRUE)) install.packages("covr")'
