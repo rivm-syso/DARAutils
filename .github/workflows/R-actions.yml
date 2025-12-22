@@ -28,6 +28,11 @@ jobs:
         run: covr::package_coverage()
         shell: Rscript {0}
 
+      # 4. Build and deploy pkgdown site
+      - name: Build and deploy pkgdown
+        uses: r-lib/actions/pkgdown@v2
+        with:
+          deploy_key: ${{ secrets.DEPLOY_KEY }}
 
   #     - name: Generate coverage XML & badge
   #       run: |
