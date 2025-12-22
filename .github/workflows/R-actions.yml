@@ -28,6 +28,9 @@ jobs:
         run: covr::package_coverage()
         shell: Rscript {0}
 
+      - name: Install package
+        run: Rscript -e 'remotes::install_deps(dependencies = TRUE); devtools::install()'
+
       # 4. Build and deploy pkgdown site
       - name: Build and deploy pkgdown
         run: Rscript -e "pkgdown::build_site_github_pages()"
