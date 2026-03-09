@@ -1,3 +1,25 @@
+# DARAutils v0.6.0
+09-03-2026
+
+### :sparkles: Added
+- Deploy DARAutils on RIVM Syso Github
+- README.md for GitHub (#79)
+
+### :hammer_and_wrench: Changed
+
+- Common mistake linters added and linted whole package (#66).
+- Changed the CICD Rpackage setup. Now it first scans the known libpaths (including
+the docker image), before installing missing packages.
+This results in a faster CICD-pipeline runtime. (#90).
+- Moved citation file to correct location.
+
+### :bug: Fixed
+
+- Remove unused imports (#80)
+
+### :coffin: Deprecated
+
+
 # DARAutils v0.5.0
 11-06-2025
 
@@ -50,7 +72,7 @@
 ### :coffin: Deprecated
 
 
-# DARAutils v0.2.0 
+# DARAutils v0.2.0
 11-12-2024
 
 ### :sparkles: Added
@@ -108,11 +130,11 @@
 
 ### :hammer_and_wrench: Changed
 
-- Downgraded dependency on withr to 3.0.0, because of problems caused by the R OOD library still having the 3.0.0 version (#25). 
+- Downgraded dependency on withr to 3.0.0, because of problems caused by the R OOD library still having the 3.0.0 version (#25).
 
 - Edited script `logger`, as `local_logger_sink` function was added to this script
 
-### :bug: Fixed 
+### :bug: Fixed
 
 ### :coffin: Deprecated
 
@@ -143,6 +165,6 @@
 
 ### :hammer_and_wrench: Changed
 
-### :bug: Fixed 
+### :bug: Fixed
 
 ### :coffin: Deprecated

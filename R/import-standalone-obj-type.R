@@ -277,11 +277,11 @@ obj_type_oo <- function(x) {
     return("bare")
   }
 
-  class <- inherits(x, c("R6", "S7_object"), which = TRUE)
+  class_object <- inherits(x, c("R6", "S7_object"), which = TRUE)
 
-  if (class[[1]]) {
+  if (class_object[[1]]) {
     "R6"
-  } else if (class[[2]]) {
+  } else if (class_object[[2]]) {
     "S7"
   } else if (isS4(x)) {
     "S4"
@@ -330,14 +330,14 @@ stop_input_type <- function(x,
     format_arg <- cli$format_arg
   }
 
-  message <- sprintf(
+  message_error <- sprintf(
     "%s must be %s, not %s.",
     format_arg(arg),
     what,
     obj_type_friendly(x, value = show_value)
   )
 
-  abort(message, ..., call = call, arg = arg)
+  abort(message_error, ..., call = call, arg = arg)
 }
 
 oxford_comma <- function(chr, sep = ", ", final = "or") {
@@ -347,16 +347,16 @@ oxford_comma <- function(chr, sep = ", ", final = "or") {
     return(chr)
   }
 
-  head <- chr[seq_len(n - 1)]
+  head_n <- chr[seq_len(n - 1)]
   last <- chr[n]
 
-  head <- paste(head, collapse = sep)
+  head_n <- paste(head_n, collapse = sep)
 
   # Write a or b. But a, b, or c.
   if (n > 2) {
-    paste0(head, sep, final, " ", last)
+    paste0(head_n, sep, final, " ", last)
   } else {
-    paste0(head, " ", final, " ", last)
+    paste0(head_n, " ", final, " ", last)
   }
 }
 

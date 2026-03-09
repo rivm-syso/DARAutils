@@ -12,13 +12,13 @@ formatter_cli <- structure(
     msg_linesep <- paste(unlist(list(...)), collapse = "\n")
     tryCatch(
       {
-        msg_formatted <<- format_inline(msg_linesep, .envir = .topenv)
+        msg_formatted <- format_inline(msg_linesep, .envir = .topenv)
       },
       error = function(x) {
         log_warn("Logger message parsing failed!")
         log_warn("Parser error message: {x$message}")
         log_warn("Falling back to simple paste formatter")
-        msg_formatted <<- msg_linesep
+        msg_formatted <- msg_linesep
       }
     )
 
@@ -34,14 +34,14 @@ formatter_cli <- structure(
 #' @return NULL
 #' @export
 layout_generator_subject <- function(subject) {
-  format <- '{level} [{format(time, "%Y-%m-%d %H:%M:%S")}] [{subject}] {msg}'
+  format_string <- '{level} [{format(time, "%Y-%m-%d %H:%M:%S")}] [{subject}] {msg}'
   structure(function(level, msg, namespace = NA_character_,
                      .logcall = sys.call(), .topcall = sys.call(-1), .topenv = parent.frame()) {
     if (!inherits(level, "loglevel")) {
       stop("Invalid log level, see ?log_levels")
     }
 
-    paste0(attr(level, "level"), " [", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "] [", subject, "] ", msg)
+    paste0(attr(level, "level"), " [", format_string(Sys.time(), "%Y-%m-%d %H:%M:%S"), "] [", subject, "] ", msg)
   }, generator = deparse(match.call()))
 }
 
@@ -52,13 +52,14 @@ layout_generator_subject <- function(subject) {
 #' @return NULL
 #' @export
 local_logger_sink <- function() {
+  check_installed("withr")
 
   # save current log_appender function in object 'la'
-  la <- logger:::get_logger_definitions()$default$appender
+  la <- get(log_appender(), envir = asNamespace("logger"))
 
   # do not deliver the log record to anywhere
   log_appender(appender_void)
 
   # when the parent function has finished executing, restore log_appender to 'la'
-  defer_parent(log_appender(la))
+  withr::defer_parent(log_appender(la))
 }

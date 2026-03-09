@@ -1,10 +1,10 @@
 test_that("no inheritance", {
   default_args <- list(a = 1, b = "something")
-  expect_equal(
+  expect_identical(
     inheriting_merge(),
     list()
   )
-  expect_equal(
+  expect_identical(
     inheriting_merge(default_args),
     default_args
   )
@@ -15,12 +15,12 @@ test_that("Inheritance", {
   overwriting_args <- list(a = 2, c = "foo")
   overwriting_args2 <- list(a = 3, b = "else")
 
-  expect_equal(
+  expect_identical(
     inheriting_merge(default_args, overwriting_args),
     list(a = 2, b = "something", c = "foo")
   )
 
-  expect_equal(
+  expect_identical(
     inheriting_merge(default_args, overwriting_args, overwriting_args2),
     list(a = 3, b = "else", c = "foo")
   )
@@ -30,7 +30,7 @@ test_that("dropped names", {
   default_args <- list(123123, a = 1, b = "something")
   overwriting_args <- list(2, "foo")
   expect_warning(
-    expect_equal(
+    expect_identical(
       inheriting_merge(default_args),
       list(a = 1, b = "something")
     ),
@@ -38,7 +38,7 @@ test_that("dropped names", {
   )
 
   expect_warning(
-    expect_equal(
+    expect_identical(
       inheriting_merge(default_args, overwriting_args),
       list(a = 1, b = "something")
     ),

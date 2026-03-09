@@ -9,7 +9,7 @@ send_mail(
   body,
   recipients,
   is.html = FALSE,
-  sender = "noreply@insert_institute.nl",
+  sender = "noreply@domain.nl",
   attachments = NULL,
   cc = NULL,
   bcc = NULL

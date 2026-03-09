@@ -91,7 +91,7 @@ inheriting_merge <- function(..., call = parent.frame()) {
       c(
         "!" = "{qty(length(arg_missing_names))}Argument{?s} number {.val {arg_missing_names}}
               had values with missing names!",
-        "i" = "Name every value them after the merge, or removed them beforehand to get rid of this message."
+        "i" = "Name every value after the merge, or remove them beforehand to get rid of this message."
       ),
       call = call
     )

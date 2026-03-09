@@ -30,7 +30,8 @@ test_that("multiple rds files in output", {
 
   import_rds_to_object(test_path("outputs"))
 
-  expect_true(exists("test1_rds") && exists("test2_rds"))
+  expect_true(exists("test1_rds"))
+  expect_true(exists("test2_rds"))
 
   file.remove(test_path("outputs/test1_rds.rds"))
   file.remove(test_path("outputs/test2_rds.rds"))
@@ -39,7 +40,7 @@ test_that("multiple rds files in output", {
 
 })
 
-test_that("modification FALSE and ", {
+test_that("modification FALSE", {
 
   x <- "test_rds"
 
