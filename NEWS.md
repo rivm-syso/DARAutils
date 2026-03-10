@@ -1,3 +1,15 @@
+# DARAutils v0.6.1
+10-03-2026
+
+### :sparkles: Added
+
+### :hammer_and_wrench: Changed
+
+### :bug: Fixed
+- Fixed "cant find format string function" error (#98, #99)
+
+### :coffin: Deprecated
+
 # DARAutils v0.6.0
 09-03-2026
 

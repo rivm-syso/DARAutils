@@ -34,14 +34,13 @@ formatter_cli <- structure(
 #' @return NULL
 #' @export
 layout_generator_subject <- function(subject) {
-  format_string <- '{level} [{format(time, "%Y-%m-%d %H:%M:%S")}] [{subject}] {msg}'
   structure(function(level, msg, namespace = NA_character_,
                      .logcall = sys.call(), .topcall = sys.call(-1), .topenv = parent.frame()) {
     if (!inherits(level, "loglevel")) {
       stop("Invalid log level, see ?log_levels")
     }
 
-    paste0(attr(level, "level"), " [", format_string(Sys.time(), "%Y-%m-%d %H:%M:%S"), "] [", subject, "] ", msg)
+    paste0(attr(level, "level"), " [", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "] [", subject, "] ", msg)
   }, generator = deparse(match.call()))
 }
 
