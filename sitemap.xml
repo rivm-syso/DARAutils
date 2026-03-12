@@ -1,0 +1,23 @@
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/articles/my-vignette.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
+<url><loc>/reference/DARAutils-package.html</loc></url>
+<url><loc>/reference/ISOweek.html</loc></url>
+<url><loc>/reference/cut_and_label.html</loc></url>
+<url><loc>/reference/formatter_cli.html</loc></url>
+<url><loc>/reference/import_rds_to_object.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/inheriting_merge.html</loc></url>
+<url><loc>/reference/join_date_sequence.html</loc></url>
+<url><loc>/reference/layout_generator_subject.html</loc></url>
+<url><loc>/reference/local_logger_sink.html</loc></url>
+<url><loc>/reference/send_mail.html</loc></url>
+<url><loc>/reference/upgrade_config.html</loc></url>
+<url><loc>/reference/xlabel_weekyear.html</loc></url>
+</urlset>
+
