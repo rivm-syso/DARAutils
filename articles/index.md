@@ -2,4 +2,4 @@
 
 ### All vignettes
 
-- [my-vignette](my-vignette.md):
+- [my-vignette](https://rivm-syso.github.io/DARAutils/articles/my-vignette.md):
