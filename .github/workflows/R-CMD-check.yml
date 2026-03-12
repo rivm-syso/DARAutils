@@ -48,6 +48,9 @@ jobs:
     container:
       image: daratools/darabase:latest
 
+    permissions:
+      contents: write
+
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
