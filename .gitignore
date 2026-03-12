@@ -9,6 +9,7 @@ logs/*
 
 # do not track these files
 *.html
+*.log
 
 inst/doc
 docs/

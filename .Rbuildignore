@@ -5,5 +5,8 @@
 ^pkgdown$
 ^LICENSE\.md$
 ^\.gitlab-ci\.yml$
-.lintr
+^\.lintr$
+^\.pre-commit-config\.yaml$
+^\.gitleaks\.toml$
 ^\.github$
+^Rlib$

@@ -6,7 +6,7 @@
 \alias{DARAutils-package}
 \title{DARAutils: Useful generic functions that can be used in DARApipelines}
 \description{
-DARAutils is a R package that offers generic function that could be useful in DARA pipelines
+DARAutils is a R package that offers generic function that could be useful in DARA pipelines.
 }
 \author{
 \strong{Maintainer}: DARAteam \email{dara-team-list@rivm.nl}

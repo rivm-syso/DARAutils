@@ -24,20 +24,20 @@
 #'
 #' @export
 send_mail <- function(subject, body, recipients,
-                      is.html = FALSE, sender = "noreply@insert_institute.nl",
+                      is.html = FALSE, sender = "noreply@domain.nl",
                       attachments = NULL, cc = NULL, bcc = NULL) {
   check_installed("sendmailR")
-  msg1 <- sendmailR::mime_part(body)
+  msg1 <- mime_part(body)
   if (is.html) {
     msg1$headers$`Content-Type` <- "text/html"
   }
 
-  msg <- c(list(msg1), map(attachments, sendmailR::mime_part))
+  msg <- c(list(msg1), map(attachments, mime_part))
 
   # Spaces not allowed
   sender <- str_replace_all(sender, " ", "")
 
-  e <- sendmailR::sendmail(
+  e <- sendmail(
     from = sender,
     to = recipients,
     subject = subject,

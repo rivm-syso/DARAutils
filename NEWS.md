@@ -1,3 +1,37 @@
+# DARAutils v0.6.1
+10-03-2026
+
+### :sparkles: Added
+
+### :hammer_and_wrench: Changed
+
+### :bug: Fixed
+- Fixed "cant find format string function" error (#98, #99)
+
+### :coffin: Deprecated
+
+# DARAutils v0.6.0
+09-03-2026
+
+### :sparkles: Added
+- Deploy DARAutils on RIVM Syso Github
+- README.md for GitHub (#79)
+
+### :hammer_and_wrench: Changed
+
+- Common mistake linters added and linted whole package (#66).
+- Changed the CICD Rpackage setup. Now it first scans the known libpaths (including
+the docker image), before installing missing packages.
+This results in a faster CICD-pipeline runtime. (#90).
+- Moved citation file to correct location.
+
+### :bug: Fixed
+
+- Remove unused imports (#80)
+
+### :coffin: Deprecated
+
+
 # DARAutils v0.5.0
 11-06-2025
 
@@ -50,7 +84,11 @@
 ### :coffin: Deprecated
 
 
+<<<<<<< HEAD
 # DARAutils v0.2.0 
+=======
+# DARAutils v0.2.0
+>>>>>>> 745c6a24ee05111c60df5d0807f79a61b3bc2221
 11-12-2024
 
 ### :sparkles: Added
@@ -108,11 +146,19 @@
 
 ### :hammer_and_wrench: Changed
 
+<<<<<<< HEAD
 - Downgraded dependency on withr to 3.0.0, because of problems caused by the R OOD library still having the 3.0.0 version (#25). 
 
 - Edited script `logger`, as `local_logger_sink` function was added to this script
 
 ### :bug: Fixed 
+=======
+- Downgraded dependency on withr to 3.0.0, because of problems caused by the R OOD library still having the 3.0.0 version (#25).
+
+- Edited script `logger`, as `local_logger_sink` function was added to this script
+
+### :bug: Fixed
+>>>>>>> 745c6a24ee05111c60df5d0807f79a61b3bc2221
 
 ### :coffin: Deprecated
 
@@ -143,6 +189,10 @@
 
 ### :hammer_and_wrench: Changed
 
+<<<<<<< HEAD
 ### :bug: Fixed 
+=======
+### :bug: Fixed
+>>>>>>> 745c6a24ee05111c60df5d0807f79a61b3bc2221
 
 ### :coffin: Deprecated

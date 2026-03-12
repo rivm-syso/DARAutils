@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(DARAutils)
+library(DARAutils) # nolint: unused_import_lintr
 
 test_check("DARAutils")

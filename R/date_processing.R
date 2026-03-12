@@ -83,7 +83,7 @@ join_date_sequence <- function(x, y, by, date_x, date_y, join_f = left_join, ...
   # Pay attention:
   x_dgroup |>
     join_f(y_dgroep, by = c(by, "date_group"), ...) |>
-    select(-date_group)
+    select(-.data$date_group)
 }
 
 #' xlabel_weekyear
@@ -102,20 +102,20 @@ join_date_sequence <- function(x, y, by, date_x, date_y, join_f = left_join, ...
 #' @export
 xlabel_weekyear <- function(isoweeks) {
   # Dataframe of all isoweeks, weeknumbers, year and index
-  df <- tibble(
+  df_isoweek <- tibble(
     isowk = isoweeks,
-    wk.nr = isowk |> str_extract("[0-9]{2}$") |> as.numeric(),
-    yr = isowk |> str_extract("[0-9]{4}")
+    wk.nr = .data$isowk |> str_extract("[0-9]{2}$") |> as.numeric(),
+    yr = .data$isowk |> str_extract("[0-9]{4}")
   ) |>
     mutate(index = seq_len(n()))
   # Indices that have to be labeled with year-number (first per year)
-  df.lbl <- df |>
-    rename(yr.lbl = yr) |>
-    group_by(yr.lbl) |>
-    summarise(index = min(index))
+  df.lbl <- df_isoweek |>
+    rename(yr.lbl = .data$yr) |>
+    group_by(.data$yr.lbl) |>
+    summarise(index = min(.data$index))
   # Create actual labels
-  left_join(df, df.lbl, by = "index") |>
+  left_join(df_isoweek, df.lbl, by = "index") |>
     replace_na(list(yr.lbl = "")) |>
-    mutate(lbl = str_c(wk.nr, yr.lbl, sep = "\n")) |>
-    pull(lbl)
+    mutate(lbl = str_c(.data$wk.nr, .data$yr.lbl, sep = "\n")) |>
+    pull(.data$lbl)
 }

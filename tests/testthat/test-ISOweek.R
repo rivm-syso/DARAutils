@@ -2,7 +2,7 @@ test_that("ISOweek checks input", {
   expect_error(ISOweek("not a date"), "`date` must be a date or datetime")
 })
 
-test_that("ISOweek returns correc dates", {
+test_that("ISOweek returns correct dates", {
   dates <- ymd(
     "1970-07-24", "1971-07-19", "1972-05-30", "1971-03-12", "1974-01-31",
     "1973-08-13", "1974-03-28", "1972-04-16", "1970-12-30", "1970-04-20",
@@ -18,6 +18,6 @@ test_that("ISOweek returns correc dates", {
     "1971-W19", "1970-W37", "1970-W34", "1973-W20", "1973-W48", "1974-W48",
     "1973-W29", "1971-W21", "1971-W43", "1972-W06", "1972-W07", "1974-W50"
   )
-  expect_equal(ISOweek(dates[[1]]), isoweeks[[1]])
-  expect_equal(ISOweek(dates), isoweeks)
+  expect_identical(ISOweek(dates[[1]]), isoweeks[[1]])
+  expect_identical(ISOweek(dates), isoweeks)
 })

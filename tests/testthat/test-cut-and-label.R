@@ -13,22 +13,22 @@ test_that("cut_and_label has correct output for specific parameters", {
                           levels = c("<=0.2", "0.3 t/m 0.6", "0.7+"))
   )
 
-  expect_equal(
+  expect_identical(
     cut_and_label(df$x, breaks = c(1, 3), right = FALSE),
     df$x_right_false
   )
 
-  expect_equal(
+  expect_identical(
     cut_and_label(df$x, breaks = c(1, 2), right = TRUE),
     df$x_right_true
   )
 
-  expect_equal(
+  expect_identical(
     cut_and_label(df$y, breaks = c(0.2, 0.6), right = FALSE, break_steps = 0.1),
     df$y_right_false
   )
 
-  expect_equal(
+  expect_identical(
     cut_and_label(df$y, breaks = c(0.2, 0.6), right = TRUE, break_steps = 0.1),
     df$y_right_true
   )

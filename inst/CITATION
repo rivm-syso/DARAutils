@@ -1,0 +1,9 @@
+bibentry(
+  bibtype = "Misc",
+  title = "DARAutils",
+  author = "DARAteam (epi-dara@rivm.nl)",
+  journal = "2025",
+  year = "0.5.0.9000",
+  date_released = "2025-06-11",
+  url = "https://github.com/rivm-syso/DARAutils",
+)
