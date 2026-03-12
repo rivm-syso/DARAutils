@@ -24,8 +24,13 @@ jobs:
       - name: Fix git safe directory
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      # No setup-r step needed — R is already installed in your Docker image
+      # qpdf is required by R CMD CHECK for PDF size reduction checks
+      - name: Install system dependencies
+        run: |
+          apt-get update -qq
+          apt-get install -y --no-install-recommends qpdf
 
+      # No setup-r step needed — R is already installed in your Docker image
       - name: Setup R dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -41,7 +46,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     container:
-      image: your-dockerhub-org/your-image:latest  # <-- replace with your image
+      image: daratools/darabase:latest
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}

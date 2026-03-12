@@ -10,7 +10,7 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     container:
-      image: your-dockerhub-org/your-image:latest  # <-- replace with your image
+      image: daratools/darabase:latest
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
