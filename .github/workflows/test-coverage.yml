@@ -68,8 +68,8 @@ jobs:
             auto_unbox = TRUE,
             pretty = TRUE
           )
-          dir.create("badges", showWarnings = FALSE)
-          writeLines(badge, "badges/coverage.json")
+          dir.create("/tmp/badge-output", showWarnings = FALSE, recursive = TRUE)
+          writeLines(badge, "/tmp/badge-output/coverage.json")
           cat("Coverage:", pct, "%\n")
         shell: Rscript {0}
 
@@ -78,10 +78,6 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Save the badge file outside the repo tree
-          mkdir -p /tmp/badge-output
-          cp badges/coverage.json /tmp/badge-output/coverage.json
 
           # Switch to (or create) the gh-pages branch
           git fetch origin gh-pages 2>/dev/null || true
