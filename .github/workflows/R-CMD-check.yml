@@ -83,9 +83,10 @@ jobs:
           if (n > 0) stop(n, " lint issue(s) found.")
         shell: Rscript {0}
 
-      - name: Generate lint badge JSON
+      - name: Push lint badge to gh-pages
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         run: |
+          # Generate badge JSON into /tmp first to avoid untracked file conflict on branch switch
           N=$(cat lint_count.txt 2>/dev/null || echo "0")
           if [ "$N" -eq 0 ]; then
             COLOR="brightgreen"; MESSAGE="passing"
@@ -96,19 +97,13 @@ jobs:
           else
             COLOR="red"; MESSAGE="${N} issues"
           fi
-          mkdir -p badges
+          mkdir -p /tmp/badge-output
           printf '{\n  "schemaVersion": 1,\n  "label": "lintr",\n  "message": "%s",\n  "color": "%s"\n}\n' \
-            "$MESSAGE" "$COLOR" > badges/lint.json
+            "$MESSAGE" "$COLOR" > /tmp/badge-output/lint.json
           echo "Lint badge: ${MESSAGE} (${COLOR})"
 
-      - name: Push lint badge to gh-pages
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-        run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          mkdir -p /tmp/badge-output
-          cp badges/lint.json /tmp/badge-output/lint.json
 
           git fetch origin gh-pages 2>/dev/null || true
           if git show-ref --quiet refs/remotes/origin/gh-pages; then
