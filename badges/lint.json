@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
   "label": "lintr",
-  "message": "passing",
-  "color": "brightgreen"
+  "message": "1 issues",
+  "color": "yellow"
 }
