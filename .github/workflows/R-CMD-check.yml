@@ -69,7 +69,6 @@ jobs:
         # Added install to negate the linter from going of in the man pages.
         run: | 
           install.packages("lintr")
-          devtools::install_local(".", dependencies = TRUE)
         shell: Rscript {0}
 
       - name: Run lintr
