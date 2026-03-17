@@ -14,5 +14,7 @@ linters: linters_with_tags(tags = c("default", "common_mistakes", "executing", "
   )
 encoding: "UTF-8"
 exclusions: list(
-  "vignettes/*",
+  "vignettes" = list(
+    unused_import_linter = NULL,
+  )
 )
