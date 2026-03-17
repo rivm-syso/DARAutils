@@ -13,6 +13,3 @@ linters: linters_with_tags(tags = c("default", "common_mistakes", "executing", "
   expect_s4_class_linter = NULL
   )
 encoding: "UTF-8"
-exclusions: list(
-  "vignettes/" = linters(unused_import_linter)
-  )
