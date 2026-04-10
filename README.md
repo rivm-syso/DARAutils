@@ -1,9 +1,5 @@
 # DARAutils
 
-[![R CMD Check](https://github.com/rivm-syso/DARAutils/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/rivm-syso/DARAutils/actions/workflows/R-CMD-check.yml)
-[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/rivm-syso/DARAutils/gh-pages/badges/coverage.json)](https://github.com/rivm-syso/DARAutils/actions/workflows/test-coverage.yml)
-[![Lint](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/rivm-syso/DARAutils/gh-pages/badges/lint.json)](https://github.com/rivm-syso/DARAutils/actions/workflows/R-CMD-check.yml)
-
 ## Useful generic functions that can be used in DARApipelines
 
 ## Overview

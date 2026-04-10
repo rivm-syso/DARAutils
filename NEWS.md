@@ -1,3 +1,17 @@
+# DARAutils v0.6.2
+10-04-2026
+
+### :sparkles: Added
+
+### :hammer_and_wrench: Changed
+- Fixed "Error in get(log_appender(), envir = asNamespace('logger')) : 
+  invalid first argument" error (#106)
+
+### :bug: Fixed
+
+### :coffin: Deprecated
+
+
 # DARAutils v0.6.1
 10-03-2026
 
@@ -9,6 +23,7 @@
 - Fixed "cant find format string function" error (#98, #99)
 
 ### :coffin: Deprecated
+
 
 # DARAutils v0.6.0
 09-03-2026
@@ -84,11 +99,7 @@ This results in a faster CICD-pipeline runtime. (#90).
 ### :coffin: Deprecated
 
 
-<<<<<<< HEAD
-# DARAutils v0.2.0 
-=======
 # DARAutils v0.2.0
->>>>>>> 745c6a24ee05111c60df5d0807f79a61b3bc2221
 11-12-2024
 
 ### :sparkles: Added
@@ -146,19 +157,11 @@ This results in a faster CICD-pipeline runtime. (#90).
 
 ### :hammer_and_wrench: Changed
 
-<<<<<<< HEAD
-- Downgraded dependency on withr to 3.0.0, because of problems caused by the R OOD library still having the 3.0.0 version (#25). 
-
-- Edited script `logger`, as `local_logger_sink` function was added to this script
-
-### :bug: Fixed 
-=======
 - Downgraded dependency on withr to 3.0.0, because of problems caused by the R OOD library still having the 3.0.0 version (#25).
 
 - Edited script `logger`, as `local_logger_sink` function was added to this script
 
 ### :bug: Fixed
->>>>>>> 745c6a24ee05111c60df5d0807f79a61b3bc2221
 
 ### :coffin: Deprecated
 
@@ -189,10 +192,6 @@ This results in a faster CICD-pipeline runtime. (#90).
 
 ### :hammer_and_wrench: Changed
 
-<<<<<<< HEAD
-### :bug: Fixed 
-=======
 ### :bug: Fixed
->>>>>>> 745c6a24ee05111c60df5d0807f79a61b3bc2221
 
 ### :coffin: Deprecated

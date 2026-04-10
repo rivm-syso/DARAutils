@@ -51,14 +51,9 @@ layout_generator_subject <- function(subject) {
 #' @return NULL
 #' @export
 local_logger_sink <- function() {
-  check_installed("withr")
+  original_threshold <- logger::log_threshold()
+  logger::log_threshold(logger::OFF)
 
-  # save current log_appender function in object 'la'
-  la <- get(log_appender(), envir = asNamespace("logger"))
-
-  # do not deliver the log record to anywhere
-  log_appender(appender_void)
-
-  # when the parent function has finished executing, restore log_appender to 'la'
-  withr::defer_parent(log_appender(la))
+  # Explicitly setting to previous threshold to not hard-code other log levels.
+  withr::defer_parent(logger::log_threshold(original_threshold))
 }

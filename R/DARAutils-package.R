@@ -32,7 +32,6 @@
 #' @importFrom lubridate today
 #' @importFrom lubridate years
 #' @importFrom lubridate ymd
-#' @importFrom methods as
 #' @importFrom purrr compact
 #' @importFrom purrr list_flatten
 #' @importFrom purrr map

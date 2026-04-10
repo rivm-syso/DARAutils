@@ -1,7 +1,7 @@
 Type: Package
 Package: DARAutils
 Title: Useful generic functions that can be used in DARApipelines
-Version: 0.6.0
+Version: 0.6.2
 Authors@R:
     person("DARAteam", , , "dara-team-list@rivm.nl", role = c("cre", "aut"))
 Description: DARAutils is a R package that offers generic function that
@@ -15,7 +15,6 @@ Imports:
     fs (>= 1.6.3),
     logger (>= 0.3.0),
     lubridate (>= 1.9.3),
-    methods (>= 4.5.1),
     purrr (>= 1.0.2),
     rlang (>= 1.1.0),
     rstudioapi (>= 0.14),
