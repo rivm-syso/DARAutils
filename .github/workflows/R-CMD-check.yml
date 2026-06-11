@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # rocker/tidyverse runs as root; mark the workspace as safe for git
       - name: Fix git safe directory
@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # rocker/tidyverse runs as root; mark the workspace as safe for git
       - name: Fix git safe directory
