@@ -1,39 +1,32 @@
-test_that("local_logger_sink changes appender from appender_console to appender_void", {
-
-  expect_identical(
-    get(log_appender(), envir = asNamespace("logger")),
-    logger::appender_console
-  )
-
+test_that("local_logger_sink changes log level to `OFF`", {
   local_logger_sink()
 
   expect_identical(
-    get(log_appender(), envir = asNamespace("logger")),
-    appender_void
+    logger::log_threshold(),
+    logger::OFF
   )
 })
 
-test_that("local_logger_sink restores log_appender after parent function is executed", {
+test_that("local_logger_sink restores log threshold after parent function is executed", {
+  current_threshold <- logger::log_threshold()
 
-  la <- get(log_appender(), envir = asNamespace("logger"))
-
-  get_local_la <- function() {
+  get_local_threshold <- function() {
     local_logger_sink()
     log_info("hello")
-    la <- get(log_appender(), envir = asNamespace("logger"))
-    return(la)
+    local_threshold <- logger::log_threshold()
+    return(local_threshold)
   }
 
   # local_logger_sink only affects logging during the execution of test_fun
-  la_local <- get_local_la()
+  threshold_local <- get_local_threshold()
   expect_identical(
-    la_local,
-    appender_void
+    threshold_local,
+    logger::OFF
   )
 
-  # after execution of parent function logging is restored to la
+  # after execution of parent function logging is restored to original threshold
   expect_identical(
-    get(log_appender(), envir = asNamespace("logger")),
-    la
+    logger::log_threshold(),
+    current_threshold
   )
 })

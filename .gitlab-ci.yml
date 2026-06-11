@@ -92,10 +92,6 @@ pages:
   artifacts:
     paths:
     - public
-<<<<<<< HEAD
-  only:
-     - main
-=======
     exclude:
       - .git/**/*  # Exclude all git-related files
       - .git/      # Explicitly exclude .git directory
@@ -192,4 +188,3 @@ overwrite_mirror_main_to_github:
     - if: '$CI_COMMIT_MESSAGE =~ /(?i)\[\s*clean GH\s*\]/'
       when: on_success
     - when: never
->>>>>>> 745c6a24ee05111c60df5d0807f79a61b3bc2221
