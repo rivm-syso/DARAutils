@@ -1,5 +1,20 @@
 # Changelog
 
+## DARAutils v0.6.2
+
+10-04-2026
+
+#### ✨ Added
+
+#### 🛠️ Changed
+
+- Fixed “Error in get(log_appender(), envir = asNamespace(‘logger’)) :
+  invalid first argument” error (#106)
+
+#### 🐛 Fixed
+
+#### ⚰️ Deprecated
+
 ## DARAutils v0.6.1
 
 10-03-2026
@@ -94,8 +109,9 @@
 
 #### ⚰️ Deprecated
 
-\<\<\<\<\<\<\< HEAD \# DARAutils v0.2.0 ======= \# DARAutils v0.2.0
-\>\>\>\>\>\>\> 745c6a24ee05111c60df5d0807f79a61b3bc2221 11-12-2024
+## DARAutils v0.2.0
+
+11-12-2024
 
 #### ✨ Added
 
@@ -154,12 +170,15 @@
 
 #### 🛠️ Changed
 
-\<\<\<\<\<\<\< HEAD - Downgraded dependency on withr to 3.0.0, because
-of problems caused by the R OOD library still having the 3.0.0 version
-(#25).
+- Downgraded dependency on withr to 3.0.0, because of problems caused by
+  the R OOD library still having the 3.0.0 version (#25).
 
 - Edited script `logger`, as `local_logger_sink` function was added to
   this script
+
+#### 🐛 Fixed
+
+#### ⚰️ Deprecated
 
 ## DARAutils v0.1.0
 
@@ -196,7 +215,6 @@ of problems caused by the R OOD library still having the 3.0.0 version
 
 #### 🛠️ Changed
 
-\<\<\<\<\<\<\< HEAD \### 🐛 Fixed ======= \### 🐛 Fixed \>\>\>\>\>\>\>
-745c6a24ee05111c60df5d0807f79a61b3bc2221
+#### 🐛 Fixed
 
 #### ⚰️ Deprecated

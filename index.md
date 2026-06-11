@@ -23,6 +23,7 @@ To install DARAutils from GitLab, first install the graph package by
 running:
 
 ``` r
+
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
 }
@@ -33,6 +34,7 @@ You can now download the latest version of DARAutils via the internal
 Gitlab environment using the remotes package:
 
 ``` r
+
 if (!requireNamespace("remotes", quietly = TRUE)) {
   install.packages("remotes")
 }
@@ -46,6 +48,7 @@ instructions on how to install older versions of DARAutils.
 #### Development version
 
 ``` r
+
 remotes::install_gitlab("dara/DARAutils@develop", host = "https://gitlab.rivm.nl", build = FALSE)
 ```
 
@@ -55,6 +58,7 @@ To install DARAutils from GitHub, first install the graph package by
 running:
 
 ``` r
+
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
 }
@@ -94,6 +98,7 @@ DARAtools framework. The other packages within
 For detailed documentation, use:
 
 ``` r
+
 # The function cut_and_label() is used here as an example.
 # Please replace it with the specific function for which you want to see documentation.
 ?cut_and_label
